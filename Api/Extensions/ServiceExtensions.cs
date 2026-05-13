@@ -21,7 +21,7 @@ namespace TouRest.Api.Extensions
             services.AddScoped<IItineraryRepository, ItineraryRepository>();
             services.AddScoped<IItineraryScheduleRepository, ItineraryScheduleRepository>();
             services.AddScoped<IItineraryStopRepository, ItineraryStopRepository>();
-            services.AddScoped<NotificationRepository, NotificationRepository>();
+            services.AddScoped<INotificationRepository, NotificationRepository>();
             services.AddScoped<IPackageRepository, PackageRepository>();
             services.AddScoped<IPackageServiceRepository, PackageServiceRepository>();
             services.AddScoped<IProviderRepository, ProviderRepository>();
@@ -39,6 +39,7 @@ namespace TouRest.Api.Extensions
             services.AddScoped<IWalletTransactionRepository, WalletTransactionRepository>();
             services.AddScoped<IPayoutRepository, PayoutRepository>();
             services.AddScoped<IItineraryScheduleRepository, ItineraryScheduleRepository>();
+            services.AddScoped<IVehicleRepository, VehicleRepository>();
             //Add services to the DI container, count = 15
             services.AddScoped<IAdminService, AdminService>();
             services.AddScoped<IAuthService, AuthService>();
@@ -66,6 +67,8 @@ namespace TouRest.Api.Extensions
             services.AddScoped<IWalletTransactionService, WalletTransactionService>();
             services.AddScoped<IPayoutService, PayoutService>();
             services.AddScoped<IRouteOptimizerService, RouteOptimizerService>();
+            services.AddScoped<IVehicleService, VehicleService>();
+            services.AddScoped<INotificationService, NotificationService>();
             return services;
         }
     }

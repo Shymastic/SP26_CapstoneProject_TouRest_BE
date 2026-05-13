@@ -70,5 +70,6 @@ namespace TouRest.Api.Controllers
             var result = await _userService.UpdateProfileAsync(userId, dto);
             return ApiResponseFactory.Ok(result, "Profile updated successfully");
         }
+
     }
 }

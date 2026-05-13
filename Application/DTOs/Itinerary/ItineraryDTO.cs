@@ -14,6 +14,7 @@ namespace TouRest.Application.DTOs.Itinerary
     {
         public Guid Id { get; set; }
         public Guid AgencyId { get; set; }
+        public string? AgencyName { get; set; }
 
         public string Name { get; set; } = null!;
 

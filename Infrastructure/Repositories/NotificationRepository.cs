@@ -17,7 +17,10 @@ namespace TouRest.Infrastructure.Repositories
         }
         public async Task<List<Notification>> GetByUserIdAsync(Guid userId)
         {
-            return await _context.Notifications.Where(n => n.RecipientUserId == userId).ToListAsync();
+            return await _context.Notifications
+                .Where(n => n.RecipientUserId == userId)
+                .OrderByDescending(n => n.CreatedAt)
+                .ToListAsync();
         }
 
         public async Task<int> GetUnreadCountAsync(Guid userId)
@@ -27,7 +30,13 @@ namespace TouRest.Infrastructure.Repositories
 
         public async Task MarkAsReadAsync(Guid notificationId)
         {
-             await _context.Notifications.Where(n => n.Id == notificationId)
+            await _context.Notifications.Where(n => n.Id == notificationId)
+                .ExecuteUpdateAsync(s => s.SetProperty(n => n.IsRead, true));
+        }
+
+        public async Task MarkAllAsReadAsync(Guid userId)
+        {
+            await _context.Notifications.Where(n => n.RecipientUserId == userId && !n.IsRead)
                 .ExecuteUpdateAsync(s => s.SetProperty(n => n.IsRead, true));
         }
     }

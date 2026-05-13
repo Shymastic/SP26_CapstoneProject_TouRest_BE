@@ -182,7 +182,8 @@ namespace TouRest.Api.Controllers
                 {
                     Id = a.Id,
                     ServiceId = a.ServiceId,
-                    ServiceName = a.Service?.Name ?? "",
+                    ServiceName = a.Service?.Name,
+                    CustomName = a.CustomName,
                     ServiceDescription = a.Service?.Description,
                     ActivityOrder = a.ActivityOrder,
                     StartTime = a.StartTime,

@@ -11,8 +11,10 @@ namespace TouRest.Domain.Entities
         [Required]
         public Guid ItineraryStopId { get; set; }
 
-        [Required]
-        public Guid ServiceId { get; set; }
+        public Guid? ServiceId { get; set; }
+
+        [MaxLength(255)]
+        public string? CustomName { get; set; }
 
         [Required]
         [Range(0, int.MaxValue, ErrorMessage = "ActivityOrder must be greater than or equal to 0")]
@@ -24,8 +26,7 @@ namespace TouRest.Domain.Entities
         [Required]
         public DateTime EndTime { get; set; }
 
-        [Required]
-        [Range(1, long.MaxValue, ErrorMessage = "Price must be greater than 0")]
+        [Range(0, long.MaxValue)]
         public long Price { get; set; }
 
         [MaxLength(500)]
@@ -33,6 +34,6 @@ namespace TouRest.Domain.Entities
 
         // Navigation properties
         public ItineraryStop ItineraryStop { get; set; } = null!;
-        public Service Service { get; set; } = null!;
+        public Service? Service { get; set; }
     }
 }

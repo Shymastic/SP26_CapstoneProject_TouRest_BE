@@ -19,17 +19,20 @@ namespace TouRest.Application.Services
     {
         private readonly IPaymentRepository _paymentRepository;
         private readonly IBookingRepository _bookingRepository;
+        private readonly INotificationRepository _notificationRepository;
         private readonly PayOSClient _payOS;
         private readonly IMapper _mapper;
 
         public PaymentService(
             IPaymentRepository paymentRepository,
             IBookingRepository bookingRepository,
+            INotificationRepository notificationRepository,
             PayOSClient payOS,
             IMapper mapper)
         {
             _paymentRepository = paymentRepository;
             _bookingRepository = bookingRepository;
+            _notificationRepository = notificationRepository;
             _payOS = payOS;
             _mapper = mapper;
         }
@@ -50,10 +53,12 @@ namespace TouRest.Application.Services
             }
 
 
-            var totalAmount = booking.TotalAmount;
-            var discountAmount = booking.BookingItineraries
-                .Sum(bi => bi.Price - bi.FinalPrice);
-            var finalAmount = totalAmount - discountAmount;
+            // grossAmount = total before discount (bi.Price = baseAmount after BookingService fix)
+            // discountAmount = bi.Price - bi.FinalPrice = discount applied at booking time
+            // finalAmount = booking.TotalAmount (already NET = grossAmount - discount)
+            var grossAmount    = booking.BookingItineraries.Sum(bi => bi.Price);
+            var discountAmount = booking.BookingItineraries.Sum(bi => bi.Price - bi.FinalPrice);
+            var finalAmount    = booking.TotalAmount;
 
 
             var orderCode = long.Parse(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString()[^9..]);
@@ -62,7 +67,7 @@ namespace TouRest.Application.Services
             var paymentRequest = new CreatePaymentLinkRequest
             {
                 OrderCode = orderCode,
-                Amount = (int)finalAmount,
+                Amount = 2000, // test-only: fixed 2,000₫ sent to PayOS; real amount stored in DB
                 Description = $"Booking {booking.Code}",
                 CancelUrl = $"{Environment.GetEnvironmentVariable("APP_URL")}/payment/cancel",
                 ReturnUrl = $"{Environment.GetEnvironmentVariable("APP_URL")}/payment/success",
@@ -77,7 +82,7 @@ namespace TouRest.Application.Services
                 Id = Guid.NewGuid(),
                 BookingId = bookingId,
                 OrderCode = orderCode,
-                Amount = totalAmount,
+                Amount = grossAmount,
                 DiscountAmount = discountAmount,
                 FinalAmount = finalAmount,
                 Status = PaymentStatus.Pending,
@@ -117,6 +122,18 @@ namespace TouRest.Application.Services
                     booking.Status = BookingStatus.Confirmed;
                     booking.UpdatedAt = DateTime.UtcNow;
                     await _bookingRepository.UpdateAsync(booking);
+
+                    await _notificationRepository.CreateAsync(new Notification
+                    {
+                        Id              = Guid.NewGuid(),
+                        RecipientUserId = booking.UserId,
+                        Title           = "Payment Confirmed",
+                        Message         = $"Your payment of {payment.FinalAmount:N0}đ for booking #{booking.Code} has been confirmed.",
+                        EntityType      = NotificationEntityType.Booking,
+                        EntityId        = payment.BookingId,
+                        IsRead          = false,
+                        CreatedAt       = DateTime.UtcNow,
+                    });
                 }
             }
             else // failed or cancelled

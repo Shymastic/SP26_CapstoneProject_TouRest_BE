@@ -92,8 +92,8 @@ namespace TouRest.Application.Services
                 BookingId           = booking.Id,
                 ItineraryScheduleId = schedule.Id,
                 VoucherId           = voucher?.Id,
-                Price               = itinerary.Price,
-                FinalPrice          = totalAmount,
+                Price               = baseAmount,   // total gross (unit price × guests)
+                FinalPrice          = totalAmount,  // total net (after discount)
                 NumberOfGuests      = request.NumberOfGuests,
                 Status              = BookingItineraryStatus.Pending,
                 CreatedAt           = DateTime.UtcNow,
@@ -111,6 +111,19 @@ namespace TouRest.Application.Services
                 voucher.UsedCount++;
                 await _voucherRepo.UpdateAsync(voucher);
             }
+
+            // 9. Create notification for the customer
+            await _notificationRepo.CreateAsync(new Notification
+            {
+                Id              = Guid.NewGuid(),
+                RecipientUserId = userId,
+                Title           = "Booking Created",
+                Message         = $"Your booking #{code} has been created. Please complete payment to confirm.",
+                EntityType      = NotificationEntityType.Booking,
+                EntityId        = booking.Id,
+                IsRead          = false,
+                CreatedAt       = DateTime.UtcNow,
+            });
 
             return new BookingCreateResponse
             {

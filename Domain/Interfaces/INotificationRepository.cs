@@ -12,5 +12,6 @@ namespace TouRest.Domain.Interfaces
         Task<List<Notification>> GetByUserIdAsync(Guid userId);
         Task<int> GetUnreadCountAsync(Guid userId);
         Task MarkAsReadAsync(Guid notificationId);
+        Task MarkAllAsReadAsync(Guid userId);
     }
 }

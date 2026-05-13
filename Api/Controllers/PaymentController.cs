@@ -56,5 +56,24 @@ namespace TouRest.Api.Controllers
                 return NotFound(new { message = "No active payment found for this booking." });
             return ApiResponseFactory.Ok(result);
         }
+
+        /// <summary>
+        /// PayOS webhook — called by PayOS after payment completes. Must be AllowAnonymous.
+        /// </summary>
+        [HttpPost("webhook")]
+        [AllowAnonymous]
+        public async Task<IActionResult> Webhook([FromBody] Webhook webhookData)
+        {
+            try
+            {
+                await _paymentService.HandleWebhookAsync(webhookData);
+                return Ok(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Webhook handling failed");
+                return Ok(new { success = false }); // Always return 200 so PayOS doesn't retry
+            }
+        }
     }
 }
