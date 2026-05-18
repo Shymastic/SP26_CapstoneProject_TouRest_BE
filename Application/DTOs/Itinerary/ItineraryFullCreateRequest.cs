@@ -41,12 +41,18 @@ namespace TouRest.Application.DTOs.Itinerary
 
         public Guid? ProviderId { get; set; }
 
+        public Guid? VehicleId { get; set; }
+
         public List<ItineraryActivityInlineRequest> Activities { get; set; } = [];
     }
 
     public class ItineraryActivityInlineRequest
     {
         public Guid? ServiceId { get; set; }
+
+        [MaxLength(255)]
+        public string? CustomName { get; set; }
+
         public int ActivityOrder { get; set; }
         public string? StartTime { get; set; }
         public string? EndTime { get; set; }

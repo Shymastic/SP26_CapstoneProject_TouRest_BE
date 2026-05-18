@@ -38,8 +38,8 @@ namespace TouRest.Api.Controllers
             var services = await _serviceService.GetAllServices();
             return ApiResponseFactory.Ok(services);
         }
-        [HttpPut]
-        public async Task<IActionResult> UpdateService(Guid id, [FromBody] ServiceUpdateRequest update)
+        [HttpPut("{id:guid}")]
+        public async Task<IActionResult> UpdateService([FromRoute] Guid id, [FromBody] ServiceUpdateRequest update)
         {
             var result = await _serviceService.UpdateService(id, update);
             return ApiResponseFactory.Ok(result, "Service updated");

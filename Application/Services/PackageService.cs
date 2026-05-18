@@ -36,7 +36,39 @@ namespace TouRest.Application.Services
             var package = await _packageRepository.GetByIdAsync(id);
             if (package == null) return null;
 
-            return MapToDTO(package);
+            var dto = MapToDTO(package);
+            var packageServices = await _packageServiceRepository.GetPackageServicesByPackageId(id);
+            dto.ServiceIds = packageServices.Select(ps => ps.ServiceId).ToList();
+            return dto;
+        }
+
+        public async Task<PackageWithServicesDTO?> GetDetailByIdAsync(Guid id)
+        {
+            var p = await _packageRepository.GetByIdWithServicesAsync(id);
+            if (p == null) return null;
+
+            return new PackageWithServicesDTO
+            {
+                Id        = p.Id,
+                Code      = p.Code,
+                Name      = p.Name,
+                BasePrice = p.BasePrice,
+                Status    = p.Status,
+                CreatedAt = p.CreatedAt,
+                UpdatedAt = p.UpdatedAt,
+                Services  = p.PackageServices.Select(ps => new PackageServiceDTO
+                {
+                    PackageId              = ps.PackageId,
+                    ServiceId              = ps.ServiceId,
+                    SortOrder              = ps.SortOrder,
+                    ServiceName            = ps.Service.Name,
+                    ServiceDescription     = ps.Service.Description,
+                    ServicePrice           = ps.Service.Price,
+                    ServiceDurationMinutes = ps.Service.DurationMinutes,
+                    ServiceStatus          = ps.Service.Status,
+                    ServiceBasePrice       = ps.Service.BasePrice,
+                }).ToList()
+            };
         }
 
         public async Task<List<PackageWithServicesDTO>> GetByProviderIdAsync(Guid providerId)
@@ -116,7 +148,31 @@ namespace TouRest.Application.Services
             existing.UpdatedAt = DateTime.UtcNow;
 
             var result = await _packageRepository.UpdateAsync(existing);
-            return MapToDTO(result);
+
+            var dto = MapToDTO(result);
+
+            if (request.ServiceIds != null)
+            {
+                var current = await _packageServiceRepository.GetPackageServicesByPackageId(id);
+                var currentIds = current.Select(ps => ps.ServiceId).ToHashSet();
+                var requestIds = request.ServiceIds.ToHashSet();
+
+                foreach (var ps in current.Where(ps => !requestIds.Contains(ps.ServiceId)))
+                    await _packageServiceRepository.DeleteAsync(id, ps.ServiceId);
+
+                var toAdd = requestIds.Except(currentIds).ToList();
+                for (int i = 0; i < toAdd.Count; i++)
+                    await _packageServiceRepository.CreateAsync(new Domain.Entities.PackageService
+                    {
+                        PackageId = id,
+                        ServiceId = toAdd[i],
+                        SortOrder = current.Count + i,
+                    });
+
+                dto.ServiceIds = request.ServiceIds;
+            }
+
+            return dto;
         }
 
         public async Task<bool> DeleteAsync(Guid id)

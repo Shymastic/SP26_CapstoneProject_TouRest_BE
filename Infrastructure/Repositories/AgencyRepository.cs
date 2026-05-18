@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TouRest.Domain.Entities;
+using TouRest.Domain.Enums;
 using TouRest.Domain.Interfaces;
 using TouRest.Infrastructure.Persistence;
 
@@ -30,7 +31,9 @@ namespace TouRest.Infrastructure.Repositories
 
         public async Task<(List<Agency> Items, int TotalCount)> GetPagedAsync(int page, int pageSize)
         {
-            var query = _context.Agencies.OrderByDescending(a => a.CreatedAt);
+            var query = _context.Agencies
+                .Where(a => a.Status != AgencyStatus.Pending)
+                .OrderByDescending(a => a.CreatedAt);
             var total = await query.CountAsync();
             var items = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
             return (items, total);

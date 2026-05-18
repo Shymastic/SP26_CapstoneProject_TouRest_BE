@@ -24,5 +24,7 @@ namespace TouRest.Application.DTOs.Package
 
         [Required]
         public PackageStatus Status { get; set; }
+
+        public List<Guid>? ServiceIds { get; set; }
     }
 }

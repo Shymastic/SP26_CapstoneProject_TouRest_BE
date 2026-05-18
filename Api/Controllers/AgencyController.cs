@@ -41,6 +41,15 @@ namespace TouRest.Api.Controllers
                 return NotFound();
             return ApiResponseFactory.Ok(agency);
         }
+
+        [HttpGet("{id:guid}/detail")]
+        public async Task<IActionResult> GetDetail(Guid id)
+        {
+            var result = await _agencyService.GetDetailByIdAsync(id);
+            if (result == null)
+                return NotFound(new { message = "Agency not found." });
+            return ApiResponseFactory.Ok(result);
+        }
         [HttpGet("user-list")]
         [Authorize(Roles = "ADMIN, AGENCY")]
         public async Task<IActionResult> GetAgencyUsers(Guid agencyId)
@@ -74,15 +83,7 @@ namespace TouRest.Api.Controllers
             await _agencyUserService.RemoveUserFromAgencyAsync(agencyId, request.UserId);
             return ApiResponseFactory.Ok(new { }, "User removed from agency");
         }
-        //[HttpPost]
-        //[Authorize(Roles = "AGENCY")]
-        //public async Task<IActionResult> CreateAgency([FromBody] AgencyCreateRequestDTO request)
-        //{
-        //    var user = User.GetUserId();
-        //    _logger.LogInformation("User {UserId} is creating an agency with name {AgencyName}", user, request.Name);
-        //    var result = await _agencyService.AddAgency(user, request);
-        //    return ApiResponseFactory.Created(result, "Agency created. Please wait for Administrator to approve");
-        //}
+        
         [HttpPut("{agencyId:guid}")]
         [HttpPost]
         [Authorize(Roles = "CUSTOMER")]
@@ -113,7 +114,5 @@ namespace TouRest.Api.Controllers
 
             return ApiResponseFactory.Created(new { }, "Agency request registered successfully");
         }
-
-
     }
 }

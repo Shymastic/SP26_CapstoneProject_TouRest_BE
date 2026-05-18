@@ -14,8 +14,10 @@ namespace TouRest.Application.Mappings
     {
         public UserProfile()
         {
-            // Map User entity to UserDTO for responses
-            CreateMap<User, UserDTO>();
+            CreateMap<User, UserDTO>()
+                .ForMember(dest => dest.Role,     opt => opt.MapFrom(src => src.Role != null ? src.Role.Code : string.Empty))
+                .ForMember(dest => dest.Status,   opt => opt.MapFrom(src => src.Status.ToString()))
+                .ForMember(dest => dest.ImageUrl, opt => opt.MapFrom(src => src.Image != null ? src.Image.Url : null));
 
             // Map RegisterRequestDTO to User entity
             // Note: PasswordHash will be set manually in the service layer using IPasswordHasher

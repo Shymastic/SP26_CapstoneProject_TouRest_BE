@@ -25,6 +25,10 @@ using TouRest.Infrastructure.Repositories;
 
 Env.TraversePath().Load();
 var builder = WebApplication.CreateBuilder(args);
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Limits.MinRequestBodyDataRate = null;
+});
 // Add services to the container.
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(Environment.GetEnvironmentVariable("DATABASE_CONNECTION")));
 builder.Services.AddCors(options =>

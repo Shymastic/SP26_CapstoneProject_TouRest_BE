@@ -21,9 +21,11 @@ namespace TouRest.Application.Mappings
             // Map Itinerary entity to ItineraryDTO for responses
             CreateMap<Itinerary, ItineraryDTO>()
                 .ForMember(dest => dest.StopCount, opt => opt.MapFrom(src => src.Stops.Count))
+                .ForMember(dest => dest.AgencyName, opt => opt.MapFrom(src => src.Agency != null ? src.Agency.Name : null))
                 .ForMember(dest => dest.Images, opt => opt.Ignore());
-            // Map ItinerarySchedule entity to ItineraryScheduleDTO
-            CreateMap<ItinerarySchedule, ItineraryScheduleDTO>();
+            // Map ItinerarySchedule entity to ItineraryScheduleDTO (GuideName is resolved manually)
+            CreateMap<ItinerarySchedule, ItineraryScheduleDTO>()
+                .ForMember(dest => dest.GuideName, opt => opt.MapFrom(src => src.Guide != null ? (src.Guide.FullName ?? src.Guide.Username) : null));
             //Map ItineraryCreateDTO to Itinerary entity for creating new itineraries
             CreateMap<ItineraryCreateRequest, Itinerary>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => Guid.NewGuid()))
@@ -61,10 +63,11 @@ namespace TouRest.Application.Mappings
             CreateMap<ItineraryStop, ItineraryStopSummaryDTO>();
             // Map ItineraryActivity to StopActivityDTO
             CreateMap<ItineraryActivity, StopActivityDTO>()
-                .ForMember(dest => dest.ServiceName, opt => opt.MapFrom(src => src.Service.Name))
-                .ForMember(dest => dest.ServiceDescription, opt => opt.MapFrom(src => src.Service.Description));
+                .ForMember(dest => dest.ServiceName, opt => opt.MapFrom(src => src.Service != null ? src.Service.Name : null))
+                .ForMember(dest => dest.ServiceDescription, opt => opt.MapFrom(src => src.Service != null ? src.Service.Description : null));
             // Map ItineraryStop to ItineraryStopWithActivitiesDTO
-            CreateMap<ItineraryStop, ItineraryStopWithActivitiesDTO>();
+            CreateMap<ItineraryStop, ItineraryStopWithActivitiesDTO>()
+                .ForMember(dest => dest.VehicleName, opt => opt.MapFrom(src => src.Vehicle != null ? src.Vehicle.Name : null));
         }
     }
 }

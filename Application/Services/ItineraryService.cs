@@ -156,6 +156,7 @@ namespace TouRest.Application.Services
                     Latitude = stopReq.Latitude,
                     Address = stopReq.Address?.Trim(),
                     ProviderId = stopReq.ProviderId,
+                    VehicleId = stopReq.VehicleId ?? Guid.Empty,
                     CreatedAt = DateTime.UtcNow,
                 };
                 var savedStop = await _stopRepository.CreateAsync(stop);
@@ -163,17 +164,19 @@ namespace TouRest.Application.Services
                 int actOrder = 0;
                 foreach (var actReq in stopReq.Activities)
                 {
-                    if (actReq.ServiceId == null || actReq.ServiceId == Guid.Empty) continue;
+                    bool isCustom = actReq.ServiceId == null || actReq.ServiceId == Guid.Empty;
+                    if (isCustom && string.IsNullOrWhiteSpace(actReq.CustomName)) continue;
 
                     var activity = new ItineraryActivity
                     {
                         Id = Guid.NewGuid(),
                         ItineraryStopId = savedStop.Id,
-                        ServiceId = actReq.ServiceId.Value,
+                        ServiceId = isCustom ? null : actReq.ServiceId,
+                        CustomName = isCustom ? actReq.CustomName!.Trim() : null,
                         ActivityOrder = actReq.ActivityOrder > 0 ? actReq.ActivityOrder : actOrder,
                         StartTime = ParseTime(actReq.StartTime),
                         EndTime = ParseTime(actReq.EndTime),
-                        Price = actReq.Price > 0 ? actReq.Price : 1,
+                        Price = actReq.Price,
                         Note = actReq.Note,
                         CreatedAt = DateTime.UtcNow,
                     };

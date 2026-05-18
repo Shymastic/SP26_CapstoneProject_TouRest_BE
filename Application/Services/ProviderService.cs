@@ -77,6 +77,33 @@ namespace TouRest.Application.Services
                 .ToList();
         }
 
+        public async Task<ProviderDetailDTO?> GetDetailByIdAsync(Guid id)
+        {
+            var provider = await _providerRepository.GetByIdAsync(id);
+            if (provider == null) return null;
+
+            var images = await _imageRepository.GetByTypeAsync(Domain.Enums.ImageType.Provider, id);
+
+            return new ProviderDetailDTO
+            {
+                Id            = provider.Id,
+                Name          = provider.Name,
+                Status        = provider.Status,
+                Description   = provider.Description,
+                Latitude      = provider.Latitude,
+                Longitude     = provider.Longitude,
+                Address       = provider.Address,
+                StartTime     = provider.StartTime,
+                EndTime       = provider.EndTime,
+                ContactEmail  = provider.ContactEmail,
+                ContactPhone  = provider.ContactPhone,
+                CreateByUserId = provider.CreateByUserId,
+                CreatedAt     = provider.CreatedAt,
+                UpdatedAt     = provider.UpdatedAt,
+                Images        = images.Select(i => i.Url).ToList(),
+            };
+        }
+
         public async Task<ProviderResponse?> GetByUserIdAsync(Guid userId)
         {
             var providerUser = await _providerUserRepository.GetByUserIdAsync(userId);

@@ -95,6 +95,33 @@ namespace TouRest.Application.Services
             var agency = await _agencyRepository.GetByIdAsync(id);
             return _mapper.Map<AgencyDTO>(agency);
         }
+
+        public async Task<AgencyDetailDTO?> GetDetailByIdAsync(Guid id)
+        {
+            var agency = await _agencyRepository.GetByIdAsync(id);
+            if (agency == null) return null;
+
+            var images = await _imageRepository.GetByTypeAsync(Domain.Enums.ImageType.Agency, id);
+
+            return new AgencyDetailDTO
+            {
+                Id             = agency.Id,
+                Name           = agency.Name,
+                Status         = agency.Status,
+                Description    = agency.Description,
+                Latitude       = agency.Latitude,
+                Longitude      = agency.Longitude,
+                Address        = agency.Address,
+                StartTime      = agency.StartTime,
+                EndTime        = agency.EndTime,
+                ContactEmail   = agency.ContactEmail,
+                ContactPhone   = agency.ContactPhone,
+                CreateByUserId = agency.CreateByUserId,
+                CreatedAt      = agency.CreatedAt,
+                UpdatedAt      = agency.UpdatedAt,
+                Images         = images.Select(i => i.Url).ToList(),
+            };
+        }
         public async Task<AgencyDTO> GetMyAgency(Guid userId)
         {
             var agency = await _agencyRepository.GetMyAgency(userId);

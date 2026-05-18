@@ -16,6 +16,7 @@ namespace TouRest.Application.DTOs.Payment
         public long FinalAmount { get; set; }
         public string Status { get; set; } = null!;
         public string? CheckoutUrl { get; set; }
+        public string? QrCode { get; set; }
         public DateTime ExpiredAt { get; set; }
         public DateTime? PaidAt { get; set; }
     }

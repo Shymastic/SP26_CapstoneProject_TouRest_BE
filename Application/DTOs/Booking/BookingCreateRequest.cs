@@ -1,21 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TouRest.Domain.Enums;
 
 namespace TouRest.Application.DTOs.Booking
 {
     public class BookingCreateRequest
     {
         [Required]
-        public Guid UserId { get; set; }
+        public Guid ScheduleId { get; set; }
 
         [Required]
-        [Range(1, int.MaxValue, ErrorMessage = "TotalAmount must be greater than 0")]
-        public int TotalAmount { get; set; }
+        [Range(1, int.MaxValue, ErrorMessage = "NumberOfGuests must be at least 1")]
+        public int NumberOfGuests { get; set; }
+
+        public string? VoucherCode { get; set; }
 
         [MaxLength(500)]
         public string? CustomerNote { get; set; }

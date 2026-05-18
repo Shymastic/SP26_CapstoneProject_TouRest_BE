@@ -16,11 +16,7 @@ namespace TouRest.Application.Mappings
          public BookingProfile()
         {
             CreateMap<Booking, BookingSummaryDTO>();
-            CreateMap<BookingCreateRequest, Booking>()
-            .ForMember(dest => dest.Id, opt => Guid.NewGuid())
-            .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
-            .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(Src => DateTime.UtcNow))
-            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => BookingStatus.Pending));
+            CreateMap<Booking, BookingDTO>();
             CreateMap<BookingUpdateRequest, Booking>()
                 .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())

@@ -29,6 +29,9 @@ namespace TouRest.Domain.Entities
         [Required]
         public ReportStatus Status { get; set; }
 
+        // Stored as a JSON array string e.g. ["url1","url2"]
+        public string? ImageUrls { get; set; }
+
         // Navigation properties
         public User User { get; set; } = null!;
     }

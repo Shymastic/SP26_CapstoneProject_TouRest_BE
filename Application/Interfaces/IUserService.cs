@@ -1,17 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using TouRest.Application.Common.Models;
 using TouRest.Application.DTOs.User;
-using TouRest.Domain.Entities;
 
 namespace TouRest.Application.Interfaces
 {
     public interface IUserService
     {
         Task<UserDTO> GetByIdAsync(Guid id);
-        Task<IEnumerable<User>> GetUsers();
+        Task<PagedResult<UserDTO>> GetPagedAsync(int page, int pageSize, string? search);
+        Task<UserDTO> CreateUserAsync(CreateUserDTO dto);
         Task<UserDTO> UpdateProfileAsync(Guid userId, UpdateProfileDTO dto);
+        Task<UserDTO> AdminUpdateUserAsync(Guid id, AdminUpdateUserDTO dto);
+        Task<List<UserDTO>> GetAllAsync();
     }
 }

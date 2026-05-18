@@ -11,5 +11,6 @@ namespace TouRest.Domain.Interfaces
     {
         Task<Package?> GetByCodeAsync(string code);
         Task<List<Package>> GetByProviderIdWithServicesAsync(Guid providerId);
+        Task<Package?> GetByIdWithServicesAsync(Guid id);
     }
 }

@@ -28,7 +28,8 @@ namespace TouRest.Application.Mappings
             CreateMap<AgencyUser, AgencyUserDTO>()
                 .ForMember(dest => dest.UserFullName, opt => opt.MapFrom(src => src.User.FullName))
                 .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User.Email))
-                .ForMember(dest => dest.AgencyName, opt => opt.MapFrom(src => src.Agency.Name));
+                .ForMember(dest => dest.AgencyName, opt => opt.MapFrom(src => src.Agency.Name))
+                .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role.ToString()));
 
 
         }

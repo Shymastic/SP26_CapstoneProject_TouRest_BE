@@ -261,6 +261,24 @@ namespace TouRest.Infrastructure.Persistence
                 .WithMany()
                 .HasForeignKey(al => al.TargetUserId)
                 .OnDelete(DeleteBehavior.SetNull);
+            // ============= DECIMAL PRECISION =============
+
+            modelBuilder.Entity<Agency>()
+                .Property(a => a.Latitude)
+                .HasPrecision(11, 8);
+
+            modelBuilder.Entity<Agency>()
+                .Property(a => a.Longitude)
+                .HasPrecision(11, 8);
+
+            modelBuilder.Entity<Provider>()
+                .Property(p => p.Latitude)
+                .HasPrecision(11, 8);
+
+            modelBuilder.Entity<Provider>()
+                .Property(p => p.Longitude)
+                .HasPrecision(11, 8);
+
             // Payment - Booking (one booking, many payments)
             modelBuilder.Entity<Payment>()
                 .HasOne(p => p.Booking)

@@ -30,10 +30,37 @@ namespace TouRest.Api.Controllers
 
         [HttpGet("")]
         [Authorize(Roles = RoleCodes.Admin)]
-        public async Task<IActionResult> GetUsers()
+        public async Task<IActionResult> GetUsers(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string? search = null)
         {
-            var users = await _userService.GetUsers();
-            return ApiResponseFactory.Ok(users);
+            var result = await _userService.GetPagedAsync(page, pageSize, search);
+            return ApiResponseFactory.Ok(result);
+        }
+
+        [HttpPost("")]
+        [Authorize(Roles = RoleCodes.Admin)]
+        public async Task<IActionResult> CreateUser([FromBody] CreateUserDTO dto)
+        {
+            var result = await _userService.CreateUserAsync(dto);
+            return ApiResponseFactory.Created(result, "User created successfully");
+        }
+
+        [HttpPut("{id:guid}")]
+        [Authorize(Roles = RoleCodes.Admin)]
+        public async Task<IActionResult> AdminUpdateUser(Guid id, [FromBody] AdminUpdateUserDTO dto)
+        {
+            var result = await _userService.AdminUpdateUserAsync(id, dto);
+            return ApiResponseFactory.Ok(result, "User updated successfully");
+        }
+
+        [HttpGet("all")]
+        [Authorize(Roles = "ADMIN,AGENCY")]
+        public async Task<IActionResult> GetAllUsers()
+        {
+            var result = await _userService.GetAllAsync();
+            return ApiResponseFactory.Ok(result);
         }
 
         [HttpPut("profile")]
@@ -43,5 +70,6 @@ namespace TouRest.Api.Controllers
             var result = await _userService.UpdateProfileAsync(userId, dto);
             return ApiResponseFactory.Ok(result, "Profile updated successfully");
         }
+
     }
 }

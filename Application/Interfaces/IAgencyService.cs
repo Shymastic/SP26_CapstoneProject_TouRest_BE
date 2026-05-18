@@ -14,6 +14,7 @@ namespace TouRest.Application.Interfaces
 
         Task<PagedResult<AgencyDTO>> GetAllAsync(int page, int pageSize);
         Task<AgencyDTO> GetAgencyById(Guid id);
+        Task<AgencyDetailDTO?> GetDetailByIdAsync(Guid id);
         Task<AgencyDTO> GetMyAgency(Guid userId);
         Task<Agency?> GetAgencyByIdWithCreator(Guid agencyId);
         Task<AgencyDTO> AddAgency(Guid userCreateId, AgencyCreateRequestDTO create);

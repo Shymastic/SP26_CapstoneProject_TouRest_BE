@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TouRest.Api.Common;
 using TouRest.Api.Extensions;
@@ -10,15 +9,17 @@ namespace TouRest.Api.Controllers
 {
     [Route("api/bookings")]
     [ApiController]
+    [Authorize]
     public class BookingController : ControllerBase
     {
         private readonly IBookingService _bookingService;
+
         public BookingController(IBookingService bookingService)
         {
             _bookingService = bookingService;
         }
+
         [HttpGet("{id:guid}")]
-        [Authorize]
         public async Task<IActionResult> GetBooking(Guid id)
         {
             var userId = User.GetUserId();
@@ -42,6 +43,7 @@ namespace TouRest.Api.Controllers
             var result = await _bookingService.CreateBookingAsync(create, userId);
             return ApiResponseFactory.Created(result, "Booking was created");
         }
+
         [HttpPut("{id:guid}")]
         [Authorize(Roles = "ADMIN, CUSTOMER")]
         public async Task<IActionResult> UpdateBooking(Guid id, [FromBody] BookingUpdateRequest update)
@@ -60,6 +62,5 @@ namespace TouRest.Api.Controllers
             await _bookingService.DeleteBookingAsync(id, userId, isAdmin);
             return ApiResponseFactory.NoContent("Booking Deleted");
         }
-       
     }
 }

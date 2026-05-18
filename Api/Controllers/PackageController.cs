@@ -40,6 +40,15 @@ namespace TouRest.Api.Controllers
             return ApiResponseFactory.Ok(result);
         }
 
+        [HttpGet("{id:guid}/detail")]
+        public async Task<IActionResult> GetDetail(Guid id)
+        {
+            var result = await _packageService.GetDetailByIdAsync(id);
+            if (result == null)
+                return NotFound(new { message = "Package not found." });
+            return ApiResponseFactory.Ok(result);
+        }
+
         [HttpPost]
         [Authorize(Roles = "ADMIN,PROVIDER")]
         public async Task<IActionResult> Create([FromBody] PackageCreateRequest request)

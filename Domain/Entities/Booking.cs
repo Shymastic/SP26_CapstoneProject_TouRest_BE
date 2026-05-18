@@ -23,6 +23,9 @@ namespace TouRest.Domain.Entities
         [Required]
         public BookingStatus Status { get; set; }
 
+        [Required]
+        public PaymentStatus PaymentStatus { get; set; }
+
         [MaxLength(500)]
         public string? CustomerNote { get; set; }
 

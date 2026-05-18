@@ -11,6 +11,7 @@ namespace TouRest.Application.Interfaces
     {
         Task<IEnumerable<PackageSummaryDTO>> GetAllAsync();
         Task<PackageDTO?> GetByIdAsync(Guid id);
+        Task<PackageWithServicesDTO?> GetDetailByIdAsync(Guid id);
         Task<List<PackageWithServicesDTO>> GetByProviderIdAsync(Guid providerId);
         Task<PackageDTO> CreateAsync(PackageCreateRequest request);
         Task<PackageDTO?> UpdateAsync(Guid id, PackageUpdateRequest request);

@@ -1,15 +1,17 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PayOS.Models.Webhooks;
+using System.Security.Claims;
 using TouRest.Api.Common;
-using TouRest.Api.Extensions;
+using TouRest.Application.DTOs.Payment;
 using TouRest.Application.Interfaces;
+using TouRest.Api.Extensions;
 
 namespace TouRest.Api.Controllers
 {
     [ApiController]
-    [Route("api/payments")]
+    [Route("api/payment")]
+    [Authorize]
     public class PaymentController : ControllerBase
     {
         private readonly IPaymentService _paymentService;
@@ -21,46 +23,56 @@ namespace TouRest.Api.Controllers
             _logger = logger;
         }
 
-        [HttpPost("booking/{bookingId:guid}")]
-        [Authorize]
+        /// <summary>
+        /// Create a payment for a booking
+        /// </summary>
+        [HttpPost("create/{bookingId}")]
         public async Task<IActionResult> CreatePayment(Guid bookingId)
         {
             var userId = User.GetUserId();
-            var payment = await _paymentService.CreatePaymentAsync(bookingId, userId);
-            return ApiResponseFactory.Ok(payment, "Payment link created");
+            var result = await _paymentService.CreatePaymentAsync(bookingId, userId);
+            return ApiResponseFactory.Created(result, "Payment link created");
         }
-
-        [HttpDelete("booking/{bookingId:guid}")]
-        [Authorize]
+        
+        /// <summary>
+        /// Cancel an active payment for a booking
+        /// </summary>
+        [HttpPost("cancel/{bookingId}")]
         public async Task<IActionResult> CancelPayment(Guid bookingId)
         {
             var userId = User.GetUserId();
-            var payment = await _paymentService.CancelPaymentAsync(bookingId, userId);
-            return ApiResponseFactory.Ok(payment, "Payment cancelled");
+            var result = await _paymentService.CancelPaymentAsync(bookingId, userId);
+            return ApiResponseFactory.Ok(result, "Payment link canceled");
         }
 
-        [HttpGet("booking/{bookingId:guid}")]
-        [Authorize]
+        /// <summary>
+        /// Get active payment for a booking (if exists)
+        /// </summary>
+        [HttpGet("active/{bookingId}")]
         public async Task<IActionResult> GetActivePayment(Guid bookingId)
         {
-            var payment = await _paymentService.GetActivePaymentAsync(bookingId);
-            return ApiResponseFactory.Ok(payment, "Active payment retrieved");
+            var result = await _paymentService.GetActivePaymentAsync(bookingId);
+            if (result == null)
+                return NotFound(new { message = "No active payment found for this booking." });
+            return ApiResponseFactory.Ok(result);
         }
 
+        /// <summary>
+        /// PayOS webhook — called by PayOS after payment completes. Must be AllowAnonymous.
+        /// </summary>
         [HttpPost("webhook")]
         [AllowAnonymous]
-        public async Task<IActionResult> HandleWebhook([FromBody] Webhook webhookData)
+        public async Task<IActionResult> Webhook([FromBody] Webhook webhookData)
         {
             try
             {
-                _logger.LogInformation("PayOS webhook received: {OrderCode}", webhookData.Data?.OrderCode);
                 await _paymentService.HandleWebhookAsync(webhookData);
                 return Ok(new { success = true });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "PayOS webhook processing failed");
-                return Ok(new { success = false }); 
+                _logger.LogError(ex, "Webhook handling failed");
+                return Ok(new { success = false }); // Always return 200 so PayOS doesn't retry
             }
         }
     }

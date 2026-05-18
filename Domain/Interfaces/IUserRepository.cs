@@ -10,5 +10,6 @@ namespace TouRest.Domain.Interfaces
     public interface IUserRepository : IBaseRepository<User>
     {
         Task<User?> GetByEmailAsync(string email);
+        Task<(List<User> Items, int TotalCount)> GetPagedAsync(int page, int pageSize, string? search);
     }
 }
