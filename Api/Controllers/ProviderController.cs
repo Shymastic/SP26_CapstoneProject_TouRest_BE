@@ -5,6 +5,7 @@ using TouRest.Api.Extensions;
 using TouRest.Application.DTOs.Provider;
 using TouRest.Application.Interfaces;
 using TouRest.Application.Services;
+using TouRest.Domain.DTOs;
 
 namespace TouRest.Api.Controllers
 {
@@ -14,11 +15,13 @@ namespace TouRest.Api.Controllers
     {
         private readonly IProviderService _providerService;
         private readonly IAuthService _authService;
+        private readonly IProviderDashboardService _dashboardService;
 
-        public ProviderController(IProviderService providerService, IAuthService authService)
+        public ProviderController(IProviderService providerService, IAuthService authService, IProviderDashboardService dashboardService)
         {
             _providerService = providerService;
             _authService = authService;
+            _dashboardService = dashboardService;
         }
 
         [HttpGet]
@@ -97,7 +100,26 @@ namespace TouRest.Api.Controllers
 
             return ApiResponseFactory.Created(new { }, "Provider request registered successfully");
         }
+        [HttpGet("dashboard/stats")]
+        public async Task<IActionResult> GetStats([FromQuery] Guid providerId)
+        {
+            var result = await _dashboardService.GetStatsAsync(providerId);
+            return Ok(result);
+        }
 
+        [HttpGet("jobs/trend")]
+        public async Task<IActionResult> GetJobsTrend([FromQuery] Guid providerId, [FromQuery] int year = 2026)
+        {
+            var result = await _dashboardService.GetJobTrendAsync(providerId, year);
+            return ApiResponseFactory.Ok(result);
+        }
+
+        [HttpGet("requests/pending")]
+        public async Task<IActionResult> GetPendingRequests([FromQuery] Guid providerId)
+        {
+            var result = await _dashboardService.GetPendingRequestsAsync(providerId);
+            return ApiResponseFactory.Ok(result);
+        }
         //[HttpDelete("{id:guid}")]
         //public async Task<IActionResult> Delete(Guid id)
         //{

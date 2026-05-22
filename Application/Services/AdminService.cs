@@ -253,5 +253,10 @@ namespace TouRest.Application.Services
             feedback.UpdatedAt = DateTime.UtcNow;
             await _feedbackRepository.UpdateAsync(feedback);
         }
+
+        public Task Dashboard()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

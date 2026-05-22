@@ -15,5 +15,6 @@ namespace TouRest.Application.Interfaces
         Task AddUserToAgencyAsync(Guid agencyId, Guid userId, AgencyUserRole role);
         Task RemoveUserFromAgencyAsync(Guid agencyId, Guid userId);
         Task<List<AgencyUserDTO>> GetAgencyUsers(Guid agencyId);
+        Task<AgencyUserDTO?> GetAgencyUserByUserId(Guid userId);
     }
 }

@@ -59,5 +59,10 @@ namespace TouRest.Application.Services
                 throw new ArgumentException("AgencyId cannot be empty", nameof(agencyId));
             return _mapper.Map<List<AgencyUserDTO>>(await _agencyUserRepository.GetAgencyUsers(agencyId));
         }
+
+        public async Task<AgencyUserDTO?> GetAgencyUserByUserId(Guid userId)
+        {
+            return _mapper.Map<AgencyUserDTO>(await _agencyUserRepository.GetAgencyUserByUserId(userId));
+        }
     }
 }

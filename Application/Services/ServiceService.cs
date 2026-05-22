@@ -60,5 +60,6 @@ namespace TouRest.Application.Services
             await _serviceRepository.DeleteAsync(id);
             return true;
         }
+        
     }
     }

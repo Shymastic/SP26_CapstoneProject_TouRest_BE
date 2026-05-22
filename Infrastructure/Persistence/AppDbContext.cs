@@ -105,7 +105,11 @@ namespace TouRest.Infrastructure.Persistence
                 .WithMany()
                 .HasForeignKey(s => s.ItineraryId)
                 .OnDelete(DeleteBehavior.Cascade);
-
+            modelBuilder.Entity<ItinerarySchedule>()
+                .HasOne(s => s.Guide)
+                .WithMany()
+                .HasForeignKey(s => s.GuideId)
+                .OnDelete(DeleteBehavior.SetNull);
             // Configure ItineraryTracking - ItinerarySchedule relationship
             modelBuilder.Entity<ItineraryTracking>()
                 .HasOne(t => t.ItinerarySchedule)
