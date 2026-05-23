@@ -20,5 +20,6 @@ namespace TouRest.Application.Interfaces
         Task<ItineraryDTO?> UpdateItineraryStatus(Guid id, ItineraryUpdateStatusRequest status);
         Task<ItineraryDTO> CreateFullAsync(Guid agencyId, ItineraryFullCreateRequest request);
         Task<List<ItineraryDTO>> GetMyItinerariesAsync(Guid agencyId);
+        Task<List<ItineraryProviderDTO>> GetProvidersInItineraryAsync(Guid itineraryId);
     }
 }

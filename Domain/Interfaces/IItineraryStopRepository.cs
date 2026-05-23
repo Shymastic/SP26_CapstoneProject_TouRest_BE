@@ -11,6 +11,7 @@ namespace TouRest.Domain.Interfaces
     {
         Task<List<ItineraryStop>> GetByItineraryIdAsync(Guid itineraryId);
         Task<List<ItineraryStop>> GetWithActivitiesByItineraryIdAsync(Guid itineraryId);
+        Task<List<ItineraryStop>> GetWithProviderAndActivitiesByItineraryIdAsync(Guid itineraryId);
         Task<ItineraryStop?> GetItineraryStop(Guid id);
         Task UpdateRangeAsync(List<ItineraryStop> ordered);
     }

@@ -57,6 +57,49 @@ namespace TouRest.Application.Services
             GuideName   = s.Guide != null ? (s.Guide.FullName ?? s.Guide.Username) : null,
         };
 
+        private static AgencyScheduleDTO MapToAgencyDTO(ItinerarySchedule s) => new()
+        {
+            Id            = s.Id,
+            ItineraryId   = s.ItineraryId,
+            ItineraryName = s.Itinerary?.Name ?? string.Empty,
+            StartTime     = s.StartTime,
+            EndTime       = s.EndTime,
+            Spot          = s.Spot,
+            SpotLeft      = s.SpotLeft,
+            GuideId       = s.GuideId,
+            GuideName     = s.Guide != null ? (s.Guide.FullName ?? s.Guide.Username) : null,
+        };
+
+        public async Task<List<AgencyScheduleDTO>> GetByAgencyIdAsync(Guid agencyId)
+        {
+            var list = await _repo.GetByAgencyIdAsync(agencyId);
+            return list.Select(MapToAgencyDTO).ToList();
+        }
+
+        public async Task<List<AgencyScheduleDTO>> GetByGuideIdAsync(Guid guideId)
+        {
+            var list = await _repo.GetByGuideIdAsync(guideId);
+            return list.Select(MapToAgencyDTO).ToList();
+        }
+
+        public async Task<List<ProviderScheduleDTO>> GetByProviderIdAsync(Guid providerId)
+        {
+            var list = await _repo.GetByProviderIdAsync(providerId);
+            return list.Select(s => new ProviderScheduleDTO
+            {
+                Id            = s.Id,
+                ItineraryId   = s.ItineraryId,
+                ItineraryName = s.Itinerary?.Name ?? string.Empty,
+                AgencyName    = s.Itinerary?.Agency?.Name ?? string.Empty,
+                StartTime     = s.StartTime,
+                EndTime       = s.EndTime,
+                Spot          = s.Spot,
+                SpotLeft      = s.SpotLeft,
+                GuideId       = s.GuideId,
+                GuideName     = s.Guide != null ? (s.Guide.FullName ?? s.Guide.Username) : null,
+            }).ToList();
+        }
+
         public async Task<bool> DeleteAsync(Guid scheduleId)
         {
             return await _repo.DeleteAsync(scheduleId);

@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TouRest.Application.DTOs.WishList;
 using TouRest.Application.Interfaces;
+using TouRest.Domain.Enums;
 using TouRest.Domain.Entities;
 using TouRest.Domain.Enums;
 using TouRest.Domain.Interfaces;
@@ -95,6 +96,44 @@ namespace TouRest.Application.Services
             await ValidateItemExistsAsync(itemType, itemId);
         }
 
+        public async Task<WishListCheckResponse> CheckAsync(Guid userId, Guid itemId)
+        {
+            var item = await _wishListRepository.GetByUserAndItemAsync(userId, itemId);
+            return new WishListCheckResponse
+            {
+                IsFavorited = item != null,
+                WishlistId = item?.Id
+            };
+        }
+
+        public async Task<WishListDTO> AddByUserAsync(Guid userId, WishlistItemType itemType, Guid itemId)
+        {
+            await ValidateRequestAsync(userId, itemType, itemId);
+
+            var duplicate = await _wishListRepository.GetByUserAndItemAsync(userId, itemId);
+            if (duplicate != null)
+                throw new InvalidOperationException("This item already exists in the user's wishlist.");
+
+            var entity = new Wishlist
+            {
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                ItemType = itemType,
+                ItemId = itemId,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            var created = await _wishListRepository.CreateAsync(entity);
+            return MapToDTO(created);
+        }
+
+        public async Task<bool> RemoveByUserAndItemAsync(Guid userId, Guid itemId)
+        {
+            var item = await _wishListRepository.GetByUserAndItemAsync(userId, itemId);
+            if (item == null) return false;
+            return await _wishListRepository.DeleteAsync(item.Id);
+        }
+
         private async Task ValidateItemExistsAsync(WishlistItemType itemType, Guid itemId)
         {
             switch (itemType)
@@ -107,6 +146,21 @@ namespace TouRest.Application.Services
                 case WishlistItemType.Package:
                     if (!await _wishListRepository.PackageExistsAsync(itemId))
                         throw new KeyNotFoundException("Package not found.");
+                    break;
+
+                case WishlistItemType.Agency:
+                    if (!await _wishListRepository.AgencyExistsAsync(itemId))
+                        throw new KeyNotFoundException("Agency not found.");
+                    break;
+
+                case WishlistItemType.Provider:
+                    if (!await _wishListRepository.ProviderExistsAsync(itemId))
+                        throw new KeyNotFoundException("Provider not found.");
+                    break;
+
+                case WishlistItemType.Itinerary:
+                    if (!await _wishListRepository.ItineraryExistsAsync(itemId))
+                        throw new KeyNotFoundException("Itinerary not found.");
                     break;
 
                 default:

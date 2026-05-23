@@ -131,6 +131,24 @@ namespace TouRest.Api.Controllers
         }
 
         // ── Schedule endpoints ────────────────────────────────────────────────
+        [HttpGet("schedules/agency")]
+        [Authorize(Roles = "AGENCY")]
+        public async Task<IActionResult> GetAgencySchedules()
+        {
+            var agencyId = await ResolveAgencyIdAsync();
+            var result = await _scheduleService.GetByAgencyIdAsync(agencyId);
+            return ApiResponseFactory.Ok(result);
+        }
+
+        [HttpGet("schedules/my-guide")]
+        [Authorize(Roles = "AGENCY")]
+        public async Task<IActionResult> GetMyGuideSchedules()
+        {
+            var userId = User.GetUserId();
+            var result = await _scheduleService.GetByGuideIdAsync(userId);
+            return ApiResponseFactory.Ok(result);
+        }
+
         [HttpGet("{id:guid}/schedules")]
         public async Task<IActionResult> GetSchedules(Guid id)
         {
@@ -162,6 +180,14 @@ namespace TouRest.Api.Controllers
                 return ApiResponseFactory.NoContent();
             else
                 return NotFound();
+        }
+
+        // ── Provider endpoints ────────────────────────────────────────────────
+        [HttpGet("{id:guid}/providers")]
+        public async Task<IActionResult> GetItineraryProviders(Guid id)
+        {
+            var result = await _itineraryService.GetProvidersInItineraryAsync(id);
+            return ApiResponseFactory.Ok(result);
         }
 
         // ── Stop endpoints ────────────────────────────────────────────────────

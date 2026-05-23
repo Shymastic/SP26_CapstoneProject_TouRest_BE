@@ -210,6 +210,41 @@ namespace TouRest.Application.Services
             return _mapper.Map<List<ItineraryDTO>>(list);
         }
 
+        public async Task<List<ItineraryProviderDTO>> GetProvidersInItineraryAsync(Guid itineraryId)
+        {
+            var stops = await _stopRepository.GetWithProviderAndActivitiesByItineraryIdAsync(itineraryId);
+            var seen = new HashSet<Guid>();
+            var result = new List<ItineraryProviderDTO>();
+
+            foreach (var stop in stops)
+            {
+                if (stop.Provider == null || !seen.Add(stop.Provider.Id)) continue;
+
+                var services = stop.Activities
+                    .Select(a => a.Service?.Name ?? a.CustomName)
+                    .Where(n => !string.IsNullOrWhiteSpace(n))
+                    .Select(n => n!)
+                    .Distinct()
+                    .ToList();
+
+                var images = await _imageRepository.GetByTypeAsync(ImageType.Provider, stop.Provider.Id);
+                var imageUrls = images.Select(i => i.Url).ToList();
+
+                result.Add(new ItineraryProviderDTO
+                {
+                    Id = stop.Provider.Id,
+                    Name = stop.Provider.Name,
+                    Description = stop.Provider.Description,
+                    Address = stop.Provider.Address,
+                    ContactPhone = stop.Provider.ContactPhone,
+                    Services = services,
+                    Images = imageUrls,
+                });
+            }
+
+            return result;
+        }
+
         private static DateTime ParseTime(string? timeStr)
         {
             if (string.IsNullOrWhiteSpace(timeStr)) return DateTime.UtcNow;

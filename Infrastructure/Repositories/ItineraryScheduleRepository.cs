@@ -38,5 +38,38 @@ namespace TouRest.Infrastructure.Repositories
                 .Include(s => s.Itinerary)
                 .FirstOrDefaultAsync(s => s.Id == scheduleId);
         }
+
+        public async Task<List<ItinerarySchedule>> GetByAgencyIdAsync(Guid agencyId)
+        {
+            return await _context.ItinerarySchedules
+                .Include(s => s.Itinerary)
+                .Include(s => s.Guide)
+                .Where(s => s.Itinerary.AgencyId == agencyId)
+                .OrderBy(s => s.StartTime)
+                .AsNoTracking()
+                .ToListAsync();
+        }
+
+        public async Task<List<ItinerarySchedule>> GetByGuideIdAsync(Guid guideId)
+        {
+            return await _context.ItinerarySchedules
+                .Include(s => s.Itinerary)
+                .Include(s => s.Guide)
+                .Where(s => s.GuideId == guideId)
+                .OrderBy(s => s.StartTime)
+                .AsNoTracking()
+                .ToListAsync();
+        }
+
+        public async Task<List<ItinerarySchedule>> GetByProviderIdAsync(Guid providerId)
+        {
+            return await _context.ItinerarySchedules
+                .Include(s => s.Itinerary).ThenInclude(i => i.Agency)
+                .Include(s => s.Guide)
+                .Where(s => s.Itinerary.Stops.Any(stop => stop.ProviderId == providerId))
+                .OrderBy(s => s.StartTime)
+                .AsNoTracking()
+                .ToListAsync();
+        }
     }
 }
