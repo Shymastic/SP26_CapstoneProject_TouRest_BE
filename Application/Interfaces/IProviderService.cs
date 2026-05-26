@@ -14,6 +14,8 @@ namespace TouRest.Application.Interfaces
         Task<ProviderResponse> CreateAsync(Guid currentUserId, CreateProviderRequest request);
         Task<ProviderResponse?> UpdateAsync(Guid id, UpdateProviderRequest request);
         Task<bool> DeleteAsync(Guid id);
+        Task DeactivateProviderAsync(Guid id);
+        Task ProviderDashboard(Guid id);
         //Task<ProviderResponse> CreateAsync(CreateProviderRequest request);
     }
 }

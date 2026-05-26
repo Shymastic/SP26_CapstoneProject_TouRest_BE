@@ -32,5 +32,6 @@ namespace TouRest.Application.Interfaces
         Task<List<FeedbackDTO>> GetFeedbacks(FeedbackSearch search);
         Task HideFeedback(Guid feedbackId);
         Task DeleteFeedback(Guid feedbackId);
+        Task Dashboard();
     }
 }

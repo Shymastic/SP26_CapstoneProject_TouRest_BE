@@ -16,13 +16,15 @@ namespace TouRest.Api.Controllers
         private readonly IAgencyService _agencyService;
         private readonly IAgencyUserService _agencyUserService;
         private readonly IAuthService _authService;
+        private readonly IAgencyDashboardService _dashboardService;
         public AgencyController(ILogger<AgencyController> logger, IAgencyService agencyService,
-            IAgencyUserService agencyUserService, IAuthService authService)
+            IAgencyUserService agencyUserService, IAuthService authService, IAgencyDashboardService agencyDashboardService)
         {
             _logger = logger;
             _agencyService = agencyService;
             _agencyUserService = agencyUserService;
             _authService = authService;
+            _dashboardService = agencyDashboardService;
         }
         [HttpGet]
         [Authorize(Roles = "ADMIN")]
@@ -103,7 +105,15 @@ namespace TouRest.Api.Controllers
             var result = await _agencyService.UpdateAgency(agencyId, request);
             return ApiResponseFactory.Ok(result, "Agency updated");
         }
-
+        [HttpDelete("{agencyId:guid}")]
+        [Authorize(Roles = "AGENCY, ADMIN")]
+        public async Task<IActionResult> DeactivateAgency(Guid agencyId)
+        {
+            var user = User.GetUserId();
+            _logger.LogInformation("User {UserId} is deactivating agency {AgencyId}", user, agencyId);
+            await _agencyService.DeactivateAgency(agencyId);
+            return ApiResponseFactory.Ok(new { }, "Agency deactivated");
+        }
         [HttpPost("register-request")]
         [Authorize(Roles = "CUSTOMER")]
         public async Task<IActionResult> RegisterAgencyRequest([FromBody] RegisterAgencyAccountRequest request)
@@ -113,6 +123,50 @@ namespace TouRest.Api.Controllers
             await _authService.RegisterAgencyAccountAsync(currentUserId, request);
 
             return ApiResponseFactory.Created(new { }, "Agency request registered successfully");
+        }
+        // Dashboard endpoints
+        [HttpGet("dashboard/stats")]
+        [Authorize(Roles = "AGENCY")]
+        public async Task<IActionResult> GetDashboardStats()
+        {
+            var agencyId = await GetAgencyId();
+            var result = await _dashboardService.GetStatsAsync(agencyId);
+            return ApiResponseFactory.Ok(result);
+        }
+
+        [HttpGet("dashboard/schedules/upcoming")]
+        [Authorize(Roles = "AGENCY")]
+        public async Task<IActionResult> GetUpcomingSchedules()
+        {
+            var agencyId = await GetAgencyId();
+            var result = await _dashboardService.GetUpcomingSchedulesAsync(agencyId);
+            return ApiResponseFactory.Ok(result);
+        }
+
+        [HttpGet("dashboard/bookings/recent")]
+        [Authorize(Roles = "AGENCY")]
+        public async Task<IActionResult> GetRecentBookings()
+        {
+            var agencyId = await GetAgencyId();
+            var result = await _dashboardService.GetRecentBookingsAsync(agencyId);
+            return ApiResponseFactory.Ok(result);
+        }
+
+        [HttpGet("dashboard/guides/workload")]
+        [Authorize(Roles = "AGENCY")]
+        public async Task<IActionResult> GetGuideWorkload()
+        {
+            var agencyId = await GetAgencyId();
+            var result = await _dashboardService.GetGuideWorkloadAsync(agencyId);
+            return ApiResponseFactory.Ok(result);
+        }
+        private async Task<Guid> GetAgencyId()
+        {
+            var userId = User.GetUserId();
+            var agencyUser = await _agencyUserService.GetAgencyUserByUserId(userId);
+            if (agencyUser == null)
+                throw new UnauthorizedAccessException("User is not part of any agency");
+            return agencyUser.AgencyId;
         }
     }
 }
