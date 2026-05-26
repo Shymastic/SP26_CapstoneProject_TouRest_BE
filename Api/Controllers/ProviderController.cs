@@ -15,12 +15,15 @@ namespace TouRest.Api.Controllers
     {
         private readonly IProviderService _providerService;
         private readonly IAuthService _authService;
+        private readonly IItineraryScheduleService _scheduleService;
         private readonly IProviderDashboardService _dashboardService;
 
-        public ProviderController(IProviderService providerService, IAuthService authService, IProviderDashboardService dashboardService)
+        public ProviderController(IProviderService providerService, IAuthService authService,
+            IItineraryScheduleService scheduleService, IProviderDashboardService dashboardService)
         {
             _providerService = providerService;
             _authService = authService;
+            _scheduleService = scheduleService;
             _dashboardService = dashboardService;
         }
 
@@ -111,6 +114,17 @@ namespace TouRest.Api.Controllers
         public async Task<IActionResult> GetJobsTrend([FromQuery] Guid providerId, [FromQuery] int year = 2026)
         {
             var result = await _dashboardService.GetJobTrendAsync(providerId, year);
+            return ApiResponseFactory.Ok(result);
+        }
+
+        [HttpGet("jobs/schedules")]
+        [Authorize(Roles = "PROVIDER")]
+        public async Task<IActionResult> GetJobSchedules()
+        {
+            var userId = User.GetUserId();
+            var provider = await _providerService.GetByUserIdAsync(userId)
+                ?? throw new KeyNotFoundException("No provider found for the current user.");
+            var result = await _scheduleService.GetByProviderIdAsync(provider.Id);
             return ApiResponseFactory.Ok(result);
         }
 

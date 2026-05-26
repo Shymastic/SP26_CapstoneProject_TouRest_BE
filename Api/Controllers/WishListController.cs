@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using TouRest.Api.Common;
+using TouRest.Api.Extensions;
 using TouRest.Application.DTOs.WishList;
 using TouRest.Application.Interfaces;
 
@@ -72,6 +74,46 @@ namespace TouRest.Api.Controllers
             }
 
             return ApiResponseFactory.NoContent("Wishlist item deleted successfully");
+        }
+
+        // ── Auth-based endpoints (userId from JWT) ────────────────────────────
+
+        [HttpGet("check")]
+        [Authorize]
+        public async Task<IActionResult> Check([FromQuery] Guid itemId)
+        {
+            var userId = User.GetUserId();
+            var result = await _wishListService.CheckAsync(userId, itemId);
+            return ApiResponseFactory.Ok(result);
+        }
+
+        [HttpGet("my")]
+        [Authorize]
+        public async Task<IActionResult> GetMy()
+        {
+            var userId = User.GetUserId();
+            var result = await _wishListService.GetByUserIdAsync(userId);
+            return ApiResponseFactory.Ok(result);
+        }
+
+        [HttpPost("me")]
+        [Authorize]
+        public async Task<IActionResult> AddMine([FromBody] WishListMeCreateRequest request)
+        {
+            var userId = User.GetUserId();
+            var result = await _wishListService.AddByUserAsync(userId, request.ItemType, request.ItemId);
+            return ApiResponseFactory.Created(result, "Added to wishlist");
+        }
+
+        [HttpDelete("me/item/{itemId:guid}")]
+        [Authorize]
+        public async Task<IActionResult> RemoveMine(Guid itemId)
+        {
+            var userId = User.GetUserId();
+            var deleted = await _wishListService.RemoveByUserAndItemAsync(userId, itemId);
+            if (!deleted)
+                return NotFound(new { message = "Wishlist item not found." });
+            return ApiResponseFactory.NoContent("Removed from wishlist");
         }
     }
 }

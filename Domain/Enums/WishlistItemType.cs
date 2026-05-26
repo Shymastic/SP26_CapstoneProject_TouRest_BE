@@ -9,6 +9,9 @@ namespace TouRest.Domain.Enums
     public enum WishlistItemType
     {
         Service = 0,
-        Package = 1
+        Package = 1,
+        Agency = 2,
+        Provider = 3,
+        Itinerary = 4
     }
 }

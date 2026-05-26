@@ -24,9 +24,13 @@ namespace TouRest.Domain.Interfaces
     {
         Task<IEnumerable<Wishlist>> GetByUserIdAsync(Guid userId);
         Task<Wishlist?> GetDuplicateAsync(Guid userId, Guid itemId);
+        Task<Wishlist?> GetByUserAndItemAsync(Guid userId, Guid itemId);
         Task<bool> UserExistsAsync(Guid userId);
         Task<bool> ServiceExistsAsync(Guid serviceId);
         Task<bool> PackageExistsAsync(Guid packageId);
+        Task<bool> AgencyExistsAsync(Guid agencyId);
+        Task<bool> ProviderExistsAsync(Guid providerId);
+        Task<bool> ItineraryExistsAsync(Guid itineraryId);
     }
 
 }
