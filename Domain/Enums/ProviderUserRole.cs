@@ -9,7 +9,6 @@ namespace TouRest.Domain.Enums
     public enum ProviderUserRole
     {
         Manager = 0,
-        Staff = 1,
-        Coordinator = 2
+        Staff = 1
     }
 }

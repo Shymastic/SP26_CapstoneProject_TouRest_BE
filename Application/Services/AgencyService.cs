@@ -20,16 +20,19 @@ namespace TouRest.Application.Services
         private readonly IAgencyRepository _agencyRepository;
         private readonly IImageRepository _imageRepository;
         private readonly IStorageService _storageService;
+        private readonly IItineraryScheduleRepository _scheduleRepository;
 
         public AgencyService(
             IAgencyRepository agencyRepository,
             IMapper mapper,
             IImageRepository imageRepository,
+            IItineraryScheduleRepository scheduleRepository,
             IStorageService storageService)
         {
             _mapper = mapper;
             _agencyRepository = agencyRepository;
             _imageRepository = imageRepository;
+            _scheduleRepository = scheduleRepository;
             _storageService = storageService;
         }
 
@@ -38,10 +41,10 @@ namespace TouRest.Application.Services
             var (items, total) = await _agencyRepository.GetPagedAsync(page, pageSize);
             return new PagedResult<AgencyDTO>
             {
-                Items      = _mapper.Map<List<AgencyDTO>>(items),
+                Items = _mapper.Map<List<AgencyDTO>>(items),
                 TotalCount = total,
-                Page       = page,
-                PageSize   = pageSize,
+                Page = page,
+                PageSize = pageSize,
             };
         }
 
@@ -73,10 +76,10 @@ namespace TouRest.Application.Services
                 {
                     await _imageRepository.CreateAsync(new Image
                     {
-                        Id        = Guid.NewGuid(),
-                        Url       = urls[i],
-                        Type      = ImageType.Agency,
-                        TypeId    = createdAgency.Id,
+                        Id = Guid.NewGuid(),
+                        Url = urls[i],
+                        Type = ImageType.Agency,
+                        TypeId = createdAgency.Id,
                         PicNumber = i + 1,
                     });
                 }
@@ -89,7 +92,17 @@ namespace TouRest.Application.Services
         {
             return await _agencyRepository.DeleteAsync(id);
         }
-
+        public async Task DeactivateAgency(Guid id)
+        {
+            var agency = await _agencyRepository.GetByIdAsync(id);
+            if (agency == null)
+                throw new KeyNotFoundException($"Agency with ID {id} not found.");
+            if (agency.Status == AgencyStatus.Inactive)
+                throw new InvalidOperationException("Agency is already inactive.");
+            agency.Status = AgencyStatus.Inactive;
+            agency.UpdatedAt = DateTime.UtcNow;
+            await _agencyRepository.UpdateAsync(agency);
+        }
         public async Task<AgencyDTO> GetAgencyById(Guid id)
         {
             var agency = await _agencyRepository.GetByIdAsync(id);
@@ -105,21 +118,21 @@ namespace TouRest.Application.Services
 
             return new AgencyDetailDTO
             {
-                Id             = agency.Id,
-                Name           = agency.Name,
-                Status         = agency.Status,
-                Description    = agency.Description,
-                Latitude       = agency.Latitude,
-                Longitude      = agency.Longitude,
-                Address        = agency.Address,
-                StartTime      = agency.StartTime,
-                EndTime        = agency.EndTime,
-                ContactEmail   = agency.ContactEmail,
-                ContactPhone   = agency.ContactPhone,
+                Id = agency.Id,
+                Name = agency.Name,
+                Status = agency.Status,
+                Description = agency.Description,
+                Latitude = agency.Latitude,
+                Longitude = agency.Longitude,
+                Address = agency.Address,
+                StartTime = agency.StartTime,
+                EndTime = agency.EndTime,
+                ContactEmail = agency.ContactEmail,
+                ContactPhone = agency.ContactPhone,
                 CreateByUserId = agency.CreateByUserId,
-                CreatedAt      = agency.CreatedAt,
-                UpdatedAt      = agency.UpdatedAt,
-                Images         = images.Select(i => i.Url).ToList(),
+                CreatedAt = agency.CreatedAt,
+                UpdatedAt = agency.UpdatedAt,
+                Images = images.Select(i => i.Url).ToList(),
             };
         }
         public async Task<AgencyDTO> GetMyAgency(Guid userId)
@@ -156,8 +169,11 @@ namespace TouRest.Application.Services
             return _mapper.Map<AgencyDTO>(updatedAgency);
         }
 
+        public Task AgencyDashboard(Guid id)
+        {
+            throw new NotImplementedException();
+        }
 
     }
-
 }
 

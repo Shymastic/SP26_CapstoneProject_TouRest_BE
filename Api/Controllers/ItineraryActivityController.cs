@@ -38,7 +38,7 @@ namespace TouRest.Api.Controllers
             var activities = await _itineraryActivityService.GetActivitiesByItineraryStopId(stopId);
             return ApiResponseFactory.Ok(activities);
         }
-        [HttpPost]
+        [HttpPost("stop/{stopId:guid}")]
         [Authorize(Roles = "AGENCY")]
         public async Task<IActionResult> AddItineraryActivity(Guid stopId, [FromBody] ItineraryActivityCreateRequest create)
         {

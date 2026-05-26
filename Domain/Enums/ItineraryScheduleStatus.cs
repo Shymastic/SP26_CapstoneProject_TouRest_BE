@@ -6,10 +6,12 @@ using System.Threading.Tasks;
 
 namespace TouRest.Domain.Enums
 {
-    public enum AgencyUserRole
+    public enum ItineraryScheduleStatus
     {
-        Manager = 0,
-        Staff = 1,
-        TourGuide = 2
+        Pending,      
+        Confirmed,    
+        Ongoing,      
+        Completed,    
+        Cancelled
     }
 }

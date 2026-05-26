@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using TouRest.Domain.Base;
+using TouRest.Domain.Enums;
 
 namespace TouRest.Domain.Entities
 {
@@ -22,6 +23,8 @@ namespace TouRest.Domain.Entities
 
         [Required]
         public int SpotLeft { get; set; }
+        [Required]
+        public ItineraryScheduleStatus Status { get; set; }
 
         public Guid? GuideId { get; set; }
 

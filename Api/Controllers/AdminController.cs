@@ -6,6 +6,7 @@ using TouRest.Application.DTOs.Agency;
 using TouRest.Application.DTOs.Auth;
 using TouRest.Application.DTOs.Provider;
 using TouRest.Application.Interfaces;
+using TouRest.Domain.DTOs;
 using TouRest.Domain.Entities;
 using TouRest.Domain.Enums;
 using TouRest.Domain.Interfaces;
@@ -20,11 +21,14 @@ namespace TouRest.Api.Controllers
         private readonly ILogger<AdminController> _logger;
         private readonly IAdminService _adminService;
         private readonly IAgencyService _agencyService;
+        private readonly IAdminDashboardService _dashboardService;
         private readonly IAuthService _authService;
         private readonly IUserService _userService;
         private readonly IEmailService _emailService;
 
-        public AdminController(ILogger<AdminController> logger, IAdminService adminService, IAuthService authService, IAgencyService agencyService, IUserService userService, IEmailService emailService)
+        public AdminController(ILogger<AdminController> logger, IAdminService adminService, IAuthService authService,
+            IAgencyService agencyService, IUserService userService, IEmailService emailService, IAdminDashboardService dashboardService)
+
         {
             _logger = logger;
             _adminService = adminService;
@@ -32,6 +36,7 @@ namespace TouRest.Api.Controllers
             _agencyService = agencyService;
             _userService = userService;
             _emailService = emailService;
+            _dashboardService = dashboardService;
         }
         //agency
         [HttpGet("agencies/search")]
@@ -218,6 +223,30 @@ namespace TouRest.Api.Controllers
             _logger.LogInformation("Admin {AdminId} is deleting feedback {FeedbackId}", userId, id);
             await _adminService.DeleteFeedback(id);
             return ApiResponseFactory.NoContent("Feedback deleted");
+        }
+
+        [HttpGet("stats")]
+        public async Task<IActionResult> GetStats()
+        {
+            return ApiResponseFactory.Ok(await _dashboardService.GetStatsAsync());
+        }
+
+        [HttpGet("bookings/trend")]
+        public async Task<IActionResult> GetTrend([FromQuery] int year = 2026)
+        {
+            return ApiResponseFactory.Ok(await _dashboardService.GetTrendAsync(year));
+        }
+
+        [HttpGet("requests")]
+        public async Task<IActionResult> GetPendingRequests()
+        {
+            return ApiResponseFactory.Ok(await _dashboardService.GetPendingApprovalsAsync());
+        }
+
+        [HttpGet("agencies")]
+        public async Task<IActionResult> GetTopAgencies([FromQuery] int limit = 5)
+        {
+            return ApiResponseFactory.Ok(await _dashboardService.GetTopAgenciesAsync(limit));
         }
     }
 }

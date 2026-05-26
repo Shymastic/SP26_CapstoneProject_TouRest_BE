@@ -16,5 +16,6 @@ namespace TouRest.Application.Interfaces
         Task<ServiceDTO> CreateService(ServiceCreateRequest request);
         Task<ServiceDTO?> UpdateService(Guid id, ServiceUpdateRequest request);
             Task<bool> DeleteService(Guid id);
+
     }
 }

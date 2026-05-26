@@ -217,7 +217,19 @@ namespace TouRest.Application.Services
 
             return true;
         }
-
+        //lam controller
+        public async Task DeactivateProviderAsync(Guid id)
+        {
+            var provider = await _providerRepository.GetByIdAsync(id);
+            if (provider == null)
+            {
+                throw new InvalidOperationException("Provider not found.");
+            }
+            provider.Status = ProviderStatus.Inactive;
+            provider.UpdatedAt = DateTime.UtcNow;
+            _providerRepository.Update(provider);
+            await _providerRepository.SaveChangesAsync();
+        }
         private static ProviderResponse MapToResponse(Provider provider)
         {
             return new ProviderResponse
@@ -230,6 +242,11 @@ namespace TouRest.Application.Services
                 CreatedAt = provider.CreatedAt,
                 UpdatedAt = provider.UpdatedAt
             };
+        }
+
+        public Task ProviderDashboard(Guid id)
+        {
+            throw new NotImplementedException();
         }
     }
 }
