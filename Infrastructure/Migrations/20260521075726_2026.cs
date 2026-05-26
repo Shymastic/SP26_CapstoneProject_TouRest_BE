@@ -14,18 +14,27 @@ namespace TouRest.Infrastructure.Migrations
                 name: "FK_itinerary_schedule_users_GuideId",
                 table: "itinerary_schedule");
 
-            migrationBuilder.AddColumn<string>(
-                name: "ImageUrls",
-                table: "reports",
-                type: "nvarchar(max)",
-                nullable: true);
+            // ImageUrls may already exist — add conditionally
+            migrationBuilder.Sql(@"
+                IF NOT EXISTS (
+                    SELECT 1 FROM sys.columns
+                    WHERE object_id = OBJECT_ID(N'reports') AND name = N'ImageUrls'
+                )
+                BEGIN
+                    ALTER TABLE [reports] ADD [ImageUrls] nvarchar(max) NULL;
+                END
+            ");
 
-            migrationBuilder.AddColumn<int>(
-                name: "Status",
-                table: "itinerary_schedule",
-                type: "int",
-                nullable: false,
-                defaultValue: 0);
+            // Status column for itinerary_schedule
+            migrationBuilder.Sql(@"
+                IF NOT EXISTS (
+                    SELECT 1 FROM sys.columns
+                    WHERE object_id = OBJECT_ID(N'itinerary_schedule') AND name = N'Status'
+                )
+                BEGIN
+                    ALTER TABLE [itinerary_schedule] ADD [Status] int NOT NULL DEFAULT 0;
+                END
+            ");
 
             migrationBuilder.AddForeignKey(
                 name: "FK_itinerary_schedule_users_GuideId",

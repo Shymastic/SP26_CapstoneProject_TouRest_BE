@@ -22,7 +22,7 @@ namespace TouRest.Infrastructure.Repositories
         }*/
         public async Task<Report?> GetReport(Guid id)
         {
-            return await _context.Reports.FirstOrDefaultAsync(r => r.Id == id);
+            return await _context.Reports.Include(r => r.User).FirstOrDefaultAsync(r => r.Id == id);
         }
 /*         public async Task<List<Report>> GetReports()
         {
@@ -30,7 +30,7 @@ namespace TouRest.Infrastructure.Repositories
         }*/
          public async Task<List<Report>> GetReports(ReportSearch search)
         {
-            var query = _context.Reports.AsNoTracking().AsQueryable();
+            var query = _context.Reports.AsNoTracking().Include(r => r.User).AsQueryable();
             if (!string.IsNullOrEmpty(search.UserName)){
                 query = query.Where(r => r.User.Username.Contains(search.UserName));
             }

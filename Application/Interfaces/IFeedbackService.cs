@@ -19,5 +19,7 @@ namespace TouRest.Application.Interfaces
         Task CreateReplyToFeedback(Guid id, Guid staffId, FeedbackReplyRequest replyRequest);
         Task DeleteFeedback(Guid id);
         Task<RatingSummaryDTO> RatingSummary(Guid itineraryId);
+        Task<Guid?> GetMyBookingItineraryId(Guid userId, Guid itineraryId);
+        Task<List<FeedbackDTO>> GetMyFeedbacks(Guid userId);
     }
 }

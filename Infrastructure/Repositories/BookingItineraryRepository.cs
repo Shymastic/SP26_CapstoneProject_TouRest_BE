@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TouRest.Domain.Entities;
+using TouRest.Domain.Enums;
 using TouRest.Domain.Interfaces;
 using TouRest.Infrastructure.Persistence;
 
@@ -26,6 +27,19 @@ namespace TouRest.Infrastructure.Repositories
                 .Include(bi => bi.ItinerarySchedule)
                     .ThenInclude(s => s.Itinerary)
                 .FirstOrDefaultAsync(bi => bi.Id == id);
+        }
+
+        public async Task<BookingItinerary?> GetCompletedByUserAndItinerary(Guid userId, Guid itineraryId)
+        {
+            return await _context.BookingItineraries
+                .Include(bi => bi.Booking)
+                .Include(bi => bi.ItinerarySchedule)
+                    .ThenInclude(s => s.Itinerary)
+                .Where(bi => bi.Booking.UserId == userId
+                          && bi.ItinerarySchedule.Itinerary.Id == itineraryId
+                          && bi.Status == BookingItineraryStatus.Completed)
+                .OrderByDescending(bi => bi.CreatedAt)
+                .FirstOrDefaultAsync();
         }
     }
 

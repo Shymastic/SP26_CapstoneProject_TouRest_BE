@@ -69,6 +69,21 @@ namespace TouRest.Infrastructure.Repositories
                 .ToListAsync();
         }
 
+        public async Task<List<Feedback>> GetMyFeedbacksAsync(Guid userId)
+        {
+            return await _context.Feedbacks
+                .Include(f => f.BookingItinerary)
+                    .ThenInclude(bi => bi.Booking)
+                        .ThenInclude(b => b.User)
+                .Include(f => f.BookingItinerary)
+                    .ThenInclude(bi => bi.ItinerarySchedule)
+                        .ThenInclude(s => s.Itinerary)
+                .Where(f => f.BookingItinerary.Booking.UserId == userId && f.Status == FeedbackStatus.Active)
+                .OrderByDescending(f => f.CreatedAt)
+                .AsNoTracking()
+                .ToListAsync();
+        }
+
         public async Task<Feedback?> GetFeedback(Guid id)
         {
             return await _context.Feedbacks

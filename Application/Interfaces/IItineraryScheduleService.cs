@@ -10,5 +10,7 @@ namespace TouRest.Application.Interfaces
         Task<List<AgencyScheduleDTO>> GetByAgencyIdAsync(Guid agencyId);
         Task<List<AgencyScheduleDTO>> GetByGuideIdAsync(Guid guideId);
         Task<List<ProviderScheduleDTO>> GetByProviderIdAsync(Guid providerId);
+        Task AcceptScheduleAsync(Guid scheduleId, Guid guideId);
+        Task RejectScheduleAsync(Guid scheduleId, Guid guideId);
     }
 }

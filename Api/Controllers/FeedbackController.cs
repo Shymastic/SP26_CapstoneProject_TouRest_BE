@@ -106,6 +106,26 @@ namespace TouRest.Api.Controllers
             await _feedbackService.CreateReplyToFeedback(id, userId, reply);
             return ApiResponseFactory.NoContent();
         }
+        [HttpGet("my-booking-itinerary/{itineraryId:guid}")]
+        [Authorize(Roles = "CUSTOMER")]
+        public async Task<IActionResult> GetMyBookingItinerary(Guid itineraryId)
+        {
+            var userId = User.GetUserId();
+            var bookingItineraryId = await _feedbackService.GetMyBookingItineraryId(userId, itineraryId);
+            if (bookingItineraryId == null)
+                return NotFound(new { message = "No completed booking found for this tour." });
+            return ApiResponseFactory.Ok(new { bookingItineraryId });
+        }
+
+        [HttpGet("my")]
+        [Authorize(Roles = "CUSTOMER")]
+        public async Task<IActionResult> GetMyFeedbacks()
+        {
+            var userId = User.GetUserId();
+            var result = await _feedbackService.GetMyFeedbacks(userId);
+            return ApiResponseFactory.Ok(result);
+        }
+
         [HttpGet("itinerary/{itineraryId:guid}/summary")]
         [AllowAnonymous]
         public async Task<IActionResult> GetRatingSummary(Guid itineraryId)

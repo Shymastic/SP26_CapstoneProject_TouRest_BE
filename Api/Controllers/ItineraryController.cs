@@ -182,6 +182,24 @@ namespace TouRest.Api.Controllers
                 return NotFound();
         }
 
+        [HttpPut("schedules/{scheduleId:guid}/accept")]
+        [Authorize(Roles = "AGENCY")]
+        public async Task<IActionResult> AcceptSchedule(Guid scheduleId)
+        {
+            var guideId = User.GetUserId();
+            await _scheduleService.AcceptScheduleAsync(scheduleId, guideId);
+            return ApiResponseFactory.NoContent("Schedule accepted");
+        }
+
+        [HttpPut("schedules/{scheduleId:guid}/reject")]
+        [Authorize(Roles = "AGENCY")]
+        public async Task<IActionResult> RejectSchedule(Guid scheduleId)
+        {
+            var guideId = User.GetUserId();
+            await _scheduleService.RejectScheduleAsync(scheduleId, guideId);
+            return ApiResponseFactory.NoContent("Schedule rejected");
+        }
+
         // ── Provider endpoints ────────────────────────────────────────────────
         [HttpGet("{id:guid}/providers")]
         public async Task<IActionResult> GetItineraryProviders(Guid id)
