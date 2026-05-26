@@ -42,6 +42,7 @@ namespace TouRest.Api.Extensions
             services.AddScoped<IVehicleRepository, VehicleRepository>();
             services.AddScoped<IAgencyDashboardRepository, AgencyDashboardRepository>();
 
+
             //Add services to the DI container, count = 15
             services.AddScoped<IAdminService, AdminService>();
             services.AddScoped<IAuthService, AuthService>();

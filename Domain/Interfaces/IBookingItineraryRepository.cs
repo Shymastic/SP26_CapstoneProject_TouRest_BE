@@ -11,5 +11,6 @@ namespace TouRest.Domain.Interfaces
     {
         Task<List<BookingItinerary>> GetBookingItinerariesByBookingId(Guid bookingId);
         Task<BookingItinerary?> GetBookingItineraryWithDetails(Guid id);
+        Task<List<BookingItinerary>> GetByScheduleIdAsync(Guid scheduleId);
     }
 }

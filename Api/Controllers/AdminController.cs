@@ -4,8 +4,10 @@ using TouRest.Api.Common;
 using TouRest.Api.Extensions;
 using TouRest.Application.DTOs.Agency;
 using TouRest.Application.DTOs.Auth;
+using TouRest.Application.DTOs.Payout;
 using TouRest.Application.DTOs.Provider;
 using TouRest.Application.Interfaces;
+using TouRest.Application.Services;
 using TouRest.Domain.DTOs;
 using TouRest.Domain.Entities;
 using TouRest.Domain.Enums;
@@ -25,9 +27,10 @@ namespace TouRest.Api.Controllers
         private readonly IAuthService _authService;
         private readonly IUserService _userService;
         private readonly IEmailService _emailService;
+        private readonly IWalletService _walletService;
 
         public AdminController(ILogger<AdminController> logger, IAdminService adminService, IAuthService authService,
-            IAgencyService agencyService, IUserService userService, IEmailService emailService, IAdminDashboardService dashboardService)
+            IAgencyService agencyService, IUserService userService, IEmailService emailService, IAdminDashboardService dashboardService, IWalletService walletService)
 
         {
             _logger = logger;
@@ -37,6 +40,7 @@ namespace TouRest.Api.Controllers
             _userService = userService;
             _emailService = emailService;
             _dashboardService = dashboardService;
+            _walletService = walletService;
         }
         //agency
         [HttpGet("agencies/search")]
@@ -248,5 +252,35 @@ namespace TouRest.Api.Controllers
         {
             return ApiResponseFactory.Ok(await _dashboardService.GetTopAgenciesAsync(limit));
         }
+        [HttpGet("payouts")]
+        public async Task<IActionResult> GetPendingPayouts()
+        {
+            var result = await _walletService.GetPendingPayoutsAsync();
+            return ApiResponseFactory.Ok(result);
+        }
+
+        [HttpPut("payouts/{id:guid}/approve")]
+        public async Task<IActionResult> ApprovePayout(Guid id, [FromBody] ApprovePayoutRequest request)
+        {
+            var adminId = User.GetUserId();
+            await _walletService.ApprovePayoutAsync(id, adminId, request.Note);
+            return ApiResponseFactory.Ok(new { }, "Payout approved — please transfer manually");
+        }
+
+        [HttpPut("payouts/{id:guid}/complete")]
+        public async Task<IActionResult> CompletePayout(Guid id, [FromBody] CompletePayoutRequest request)
+        {
+            var adminId = User.GetUserId();
+            await _walletService.CompletePayoutAsync(id, adminId, request.TransferReference);
+            return ApiResponseFactory.Ok(new { }, "Payout marked as completed");
+        }
+
+        [HttpPut("payouts/{id:guid}/reject")]
+        public async Task<IActionResult> RejectPayout(Guid id, [FromBody] RejectPayoutRequest request)
+        {
+            await _walletService.RejectPayoutAsync(id, request.Reason);
+            return ApiResponseFactory.Ok(new { }, "Payout rejected");
+        }
+
     }
 }

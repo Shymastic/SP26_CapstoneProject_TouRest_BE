@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TouRest.Domain.DTOs;
 using TouRest.Domain.Entities;
 using TouRest.Domain.Enums;
 
@@ -16,6 +17,7 @@ namespace TouRest.Domain.Interfaces
         Task<List<AgencyUser>> GetAgencyUsers(Guid agencyId);
         Task<AgencyUser?> GetAgencyUserByUserId(Guid userId);
         Task<List<AgencyUser>> SearchUsersByAgency(Guid id, SearchUserByAgency search);
+        Task<List<AgencyGuideDTO>> GetGuidesByAgencyIdAsync(Guid agencyId);
     }
     public class SearchUserByAgency {
         public string? Email { get; set; }

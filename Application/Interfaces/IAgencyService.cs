@@ -21,6 +21,5 @@ namespace TouRest.Application.Interfaces
         Task<AgencyDTO> UpdateAgency(Guid id, AgencyUpdateRequestDTO update);
         Task<bool> DeleteAgency(Guid id);
         Task DeactivateAgency(Guid id);
-        Task AgencyDashboard(Guid id);
     }
 }

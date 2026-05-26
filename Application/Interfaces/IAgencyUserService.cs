@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TouRest.Application.DTOs.Agency;
+using TouRest.Domain.DTOs;
 using TouRest.Domain.Enums;
 
 
@@ -16,5 +17,6 @@ namespace TouRest.Application.Interfaces
         Task RemoveUserFromAgencyAsync(Guid agencyId, Guid userId);
         Task<List<AgencyUserDTO>> GetAgencyUsers(Guid agencyId);
         Task<AgencyUserDTO?> GetAgencyUserByUserId(Guid userId);
+        Task<List<AgencyGuideDTO>> GetGuidesAsync(Guid agencyId);
     }
 }
