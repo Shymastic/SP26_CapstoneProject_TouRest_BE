@@ -31,4 +31,4 @@ ENV ASPNETCORE_URLS=http://+:8080
 COPY --from=build /app/publish .
 
 # Tell the container to run the Api
-ENTRYPOINT ["dotnet", "Api.dll"]
+ENTRYPOINT ["dotnet", "TouRest.Api.dll"]
