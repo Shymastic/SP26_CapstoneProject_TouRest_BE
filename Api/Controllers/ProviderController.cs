@@ -15,15 +15,15 @@ namespace TouRest.Api.Controllers
     {
         private readonly IProviderService _providerService;
         private readonly IAuthService _authService;
-        private readonly IProviderDashboardService _dashboardService;
         private readonly IItineraryScheduleService _scheduleService;
+        private readonly IProviderDashboardService _dashboardService;
 
-        public ProviderController(IProviderService providerService, IAuthService authService, IProviderDashboardService dashboardService, IItineraryScheduleService scheduleService)
+        public ProviderController(IProviderService providerService, IAuthService authService, IItineraryScheduleService scheduleService, IProviderDashboardService dashboardService)
         {
             _providerService = providerService;
             _authService = authService;
-            _dashboardService = dashboardService;
             _scheduleService = scheduleService;
+            _dashboardService = dashboardService;
         }
 
         [HttpGet]
@@ -122,6 +122,7 @@ namespace TouRest.Api.Controllers
             var result = await _dashboardService.GetPendingRequestsAsync(providerId);
             return ApiResponseFactory.Ok(result);
         }
+
         [HttpGet("jobs/schedules")]
         [Authorize(Roles = "PROVIDER")]
         public async Task<IActionResult> GetJobSchedules()
