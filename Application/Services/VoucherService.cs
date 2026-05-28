@@ -20,10 +20,10 @@ namespace TouRest.Application.Services
             _voucherRepository = voucherRepository;
         }
 
-        public async Task<IEnumerable<VoucherSummaryDTO>> GetAllAsync()
+        public async Task<IEnumerable<VoucherDTO>> GetAllAsync()
         {
             var vouchers = await _voucherRepository.GetAllAsync();
-            return vouchers.Select(MapToSummaryDTO);
+            return vouchers.Select(MapToDTO);
         }
 
         public async Task<VoucherDTO?> GetByIdAsync(Guid id)

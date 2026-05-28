@@ -13,6 +13,8 @@ namespace TouRest.Application.DTOs.Feedback
         public Guid BookingItineraryId { get; set; }
         public FeedbackItemType ItemType { get; set; }
         public Guid ItemId { get; set; }
+        public Guid ItineraryId { get; set; }
+        public string? ItineraryName { get; set; }
         public int Rating { get; set; }
         public string Title { get; set; } = null!;
         public string? Comment { get; set; }
@@ -20,7 +22,7 @@ namespace TouRest.Application.DTOs.Feedback
         public DateTime? RepliedAt { get; set; }
         public string? Username { get; set; }
         public string? UserAvatar { get; set; }
-        public bool IsAnonymous { get; set; } 
+        public bool IsAnonymous { get; set; }
         public FeedbackStatus Status { get; set; }
         public DateTime CreateAt { get; set; }
     }

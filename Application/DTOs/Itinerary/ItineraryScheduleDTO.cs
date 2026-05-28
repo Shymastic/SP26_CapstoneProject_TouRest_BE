@@ -23,6 +23,7 @@ namespace TouRest.Application.DTOs.Itinerary
         public int SpotLeft { get; set; }
         public Guid? GuideId { get; set; }
         public string? GuideName { get; set; }
+        public string Status { get; set; } = null!;
     }
 
     public class ProviderScheduleDTO

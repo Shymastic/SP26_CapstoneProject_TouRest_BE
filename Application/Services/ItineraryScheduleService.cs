@@ -76,6 +76,7 @@ namespace TouRest.Application.Services
             SpotLeft      = s.SpotLeft,
             GuideId       = s.GuideId,
             GuideName     = s.Guide != null ? (s.Guide.FullName ?? s.Guide.Username) : null,
+            Status        = s.Status.ToString(),
         };
 
         public async Task<List<AgencyScheduleDTO>> GetByAgencyIdAsync(Guid agencyId)
@@ -111,6 +112,40 @@ namespace TouRest.Application.Services
         public async Task<bool> DeleteAsync(Guid scheduleId)
         {
             return await _repo.DeleteAsync(scheduleId);
+        }
+
+        public async Task AcceptScheduleAsync(Guid scheduleId, Guid guideId)
+        {
+            var schedule = await _repo.GetByIdAsync(scheduleId)
+                ?? throw new KeyNotFoundException("Schedule not found");
+
+            if (schedule.GuideId != guideId)
+                throw new UnauthorizedAccessException("You are not assigned to this schedule");
+
+            if (schedule.Status != ItineraryScheduleStatus.Pending)
+                throw new InvalidOperationException("Only pending schedules can be accepted");
+
+            schedule.Status    = ItineraryScheduleStatus.Confirmed;
+            schedule.UpdatedAt = DateTime.UtcNow;
+            await _repo.UpdateAsync(schedule);
+        }
+
+        public async Task RejectScheduleAsync(Guid scheduleId, Guid guideId)
+        {
+            var schedule = await _repo.GetByIdAsync(scheduleId)
+                ?? throw new KeyNotFoundException("Schedule not found");
+
+            if (schedule.GuideId != guideId)
+                throw new UnauthorizedAccessException("You are not assigned to this schedule");
+
+            if (schedule.Status != ItineraryScheduleStatus.Pending)
+                throw new InvalidOperationException("Only pending schedules can be rejected");
+
+            // Unassign guide so the agency can reassign another
+            schedule.GuideId   = null;
+            schedule.Status    = ItineraryScheduleStatus.Pending;
+            schedule.UpdatedAt = DateTime.UtcNow;
+            await _repo.UpdateAsync(schedule);
         }
         public async Task UpdateStatusAsync(Guid scheduleId, ItineraryScheduleStatus status)
         {

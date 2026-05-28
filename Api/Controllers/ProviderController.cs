@@ -18,8 +18,7 @@ namespace TouRest.Api.Controllers
         private readonly IItineraryScheduleService _scheduleService;
         private readonly IProviderDashboardService _dashboardService;
 
-        public ProviderController(IProviderService providerService, IAuthService authService,
-            IItineraryScheduleService scheduleService, IProviderDashboardService dashboardService)
+        public ProviderController(IProviderService providerService, IAuthService authService, IItineraryScheduleService scheduleService, IProviderDashboardService dashboardService)
         {
             _providerService = providerService;
             _authService = authService;
@@ -117,6 +116,13 @@ namespace TouRest.Api.Controllers
             return ApiResponseFactory.Ok(result);
         }
 
+        [HttpGet("requests/pending")]
+        public async Task<IActionResult> GetPendingRequests([FromQuery] Guid providerId)
+        {
+            var result = await _dashboardService.GetPendingRequestsAsync(providerId);
+            return ApiResponseFactory.Ok(result);
+        }
+
         [HttpGet("jobs/schedules")]
         [Authorize(Roles = "PROVIDER")]
         public async Task<IActionResult> GetJobSchedules()
@@ -128,12 +134,6 @@ namespace TouRest.Api.Controllers
             return ApiResponseFactory.Ok(result);
         }
 
-        [HttpGet("requests/pending")]
-        public async Task<IActionResult> GetPendingRequests([FromQuery] Guid providerId)
-        {
-            var result = await _dashboardService.GetPendingRequestsAsync(providerId);
-            return ApiResponseFactory.Ok(result);
-        }
         //[HttpDelete("{id:guid}")]
         //public async Task<IActionResult> Delete(Guid id)
         //{

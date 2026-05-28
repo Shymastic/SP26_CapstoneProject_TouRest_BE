@@ -113,5 +113,17 @@ namespace TouRest.Application.Services
             var summary = await _feedbackRepository.GetRatingSummaryAsync(itineraryId);
             return summary;
         }
+
+        public async Task<Guid?> GetMyBookingItineraryId(Guid userId, Guid itineraryId)
+        {
+            var bi = await _bookingItineraryRepository.GetCompletedByUserAndItinerary(userId, itineraryId);
+            return bi?.Id;
+        }
+
+        public async Task<List<FeedbackDTO>> GetMyFeedbacks(Guid userId)
+        {
+            var feedbacks = await _feedbackRepository.GetMyFeedbacksAsync(userId);
+            return _mapper.Map<List<FeedbackDTO>>(feedbacks);
+        }
     }
     }

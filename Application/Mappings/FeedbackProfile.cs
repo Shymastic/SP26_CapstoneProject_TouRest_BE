@@ -14,7 +14,20 @@ namespace TouRest.Application.Mappings
         public FeedbackProfile()
         {
             // CreateMap<Source, Destination>();
-            CreateMap<Feedback, FeedbackDTO>();
+            CreateMap<Feedback, FeedbackDTO>()
+                .ForMember(dest => dest.CreateAt,      opt => opt.MapFrom(src => src.CreatedAt))
+                .ForMember(dest => dest.Username,      opt => opt.MapFrom(src =>
+                    src.BookingItinerary != null && src.BookingItinerary.Booking != null && src.BookingItinerary.Booking.User != null
+                        ? src.BookingItinerary.Booking.User.Username : null))
+                .ForMember(dest => dest.UserAvatar,    opt => opt.MapFrom(src =>
+                    src.BookingItinerary != null && src.BookingItinerary.Booking != null && src.BookingItinerary.Booking.User != null
+                        ? src.BookingItinerary.Booking.User.UserAvatar : null))
+                .ForMember(dest => dest.ItineraryId,   opt => opt.MapFrom(src =>
+                    src.BookingItinerary != null && src.BookingItinerary.ItinerarySchedule != null
+                        ? src.BookingItinerary.ItinerarySchedule.ItineraryId : Guid.Empty))
+                .ForMember(dest => dest.ItineraryName, opt => opt.MapFrom(src =>
+                    src.BookingItinerary != null && src.BookingItinerary.ItinerarySchedule != null && src.BookingItinerary.ItinerarySchedule.Itinerary != null
+                        ? src.BookingItinerary.ItinerarySchedule.Itinerary.Name : null));
             // For creating new feedback, we don't want to include Id, CreatedAt, UpdatedAt, and BookingItinerary navigation property
             CreateMap<FeedbackCreateRequest, Feedback>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => Guid.NewGuid()))

@@ -9,7 +9,7 @@ namespace TouRest.Application.Interfaces
 {
     public interface IVoucherService
     {
-        Task<IEnumerable<VoucherSummaryDTO>> GetAllAsync();
+        Task<IEnumerable<VoucherDTO>> GetAllAsync();
         Task<VoucherDTO?> GetByIdAsync(Guid id);
         Task<VoucherDTO> CreateAsync(VoucherCreateRequest request);
         Task<VoucherDTO?> UpdateAsync(Guid id, VoucherUpdateRequest request);
