@@ -145,11 +145,14 @@ var app = builder.Build();
 app.UseMiddleware<GlobalExceptionHandler>();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+// Remove the if statement wrapper entirely
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+    // This line ensures Swagger loads directly at the root URL if you want
+    c.RoutePrefix = "swagger"; 
+});
 
 app.UseCors("AllowFrontend");
 
