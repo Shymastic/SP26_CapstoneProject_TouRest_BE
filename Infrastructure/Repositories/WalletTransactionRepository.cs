@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,5 +13,11 @@ namespace TouRest.Infrastructure.Repositories
     public class WalletTransactionRepository : BaseRepository<WalletTransaction>, IWalletTransactionRepository
     {
         public WalletTransactionRepository(AppDbContext context) : base(context) { }
+        public async Task<List<WalletTransaction>> GetByWalletIdAsync(Guid walletId)
+    => await _context.WalletTransactions
+        .Where(t => t.WalletId == walletId)
+        .OrderByDescending(t => t.CreatedAt)
+        .AsNoTracking()
+        .ToListAsync();
     }
 }

@@ -9,10 +9,17 @@ namespace TouRest.Application.Services
     public class ItineraryScheduleService : IItineraryScheduleService
     {
         private readonly IItineraryScheduleRepository _repo;
+        private readonly IWalletRepository _walletRepository;
+        private readonly IWalletTransactionRepository _walletTransactionRepository;
+        private readonly IBookingItineraryRepository _bookingItineraryRepository;
 
-        public ItineraryScheduleService(IItineraryScheduleRepository repo)
+        public ItineraryScheduleService(IItineraryScheduleRepository repo, IWalletRepository walletRepository,
+            IWalletTransactionRepository walletTransactionRepository, IBookingItineraryRepository bookingItineraryRepository)
         {
             _repo = repo;
+            _walletRepository = walletRepository;
+            _walletTransactionRepository = walletTransactionRepository;
+            _bookingItineraryRepository = bookingItineraryRepository;
         }
 
         public async Task<List<ItineraryScheduleDTO>> GetByItineraryIdAsync(Guid itineraryId)
@@ -140,5 +147,77 @@ namespace TouRest.Application.Services
             schedule.UpdatedAt = DateTime.UtcNow;
             await _repo.UpdateAsync(schedule);
         }
+        public async Task UpdateStatusAsync(Guid scheduleId, ItineraryScheduleStatus status)
+        {
+            var schedule = await _repo.GetWithStopsAndActivitiesAsync(scheduleId);
+            if (schedule == null) throw new KeyNotFoundException("Schedule not found");
+
+            schedule.Status = status;
+            schedule.UpdatedAt = DateTime.UtcNow;
+            await _repo.UpdateAsync(schedule);
+
+            if (status != ItineraryScheduleStatus.Completed) return;
+
+            // Credit providers
+            var providerEarnings = schedule.Itinerary.Stops
+                .Where(s => s.ProviderId.HasValue)
+                .GroupBy(s => s.ProviderId!.Value)
+                .Select(g => new
+                {
+                    ProviderId = g.Key,
+                    Total = g.SelectMany(s => s.Activities).Sum(a => a.Price)
+                });
+
+            foreach (var earning in providerEarnings)
+            {
+                var wallet = await _walletRepository.GetByProviderIdAsync(earning.ProviderId);
+                if (wallet == null) continue;
+
+                wallet.Balance += earning.Total;
+                wallet.UpdatedAt = DateTime.UtcNow;
+                await _walletRepository.UpdateAsync(wallet);
+
+                await _walletTransactionRepository.CreateAsync(new WalletTransaction
+                {
+                    Id = Guid.NewGuid(),
+                    WalletId = wallet.Id,
+                    Amount = earning.Total,
+                    Type = WalletTransactionType.Credit,
+                    Reason = WalletTransactionReason.BookingEarning,
+                    ReferenceId = scheduleId,
+                    Note = $"Provider earnings from schedule {scheduleId}",
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                });
+            }
+
+            var bookingItineraries = await _bookingItineraryRepository.GetByScheduleIdAsync(scheduleId);
+            var agencyGroups = bookingItineraries.GroupBy(bi => bi.ItinerarySchedule.Itinerary.AgencyId);
+
+            foreach (var group in agencyGroups)
+            {
+                var wallet = await _walletRepository.GetByAgencyIdAsync(group.Key);
+                if (wallet == null) continue;
+
+                var total = group.Sum(bi => bi.FinalPrice);
+                wallet.Balance += total;
+                wallet.UpdatedAt = DateTime.UtcNow;
+                await _walletRepository.UpdateAsync(wallet);
+
+                await _walletTransactionRepository.CreateAsync(new WalletTransaction
+                {
+                    Id = Guid.NewGuid(),
+                    WalletId = wallet.Id,
+                    Amount = total,
+                    Type = WalletTransactionType.Credit,
+                    Reason = WalletTransactionReason.BookingEarning,
+                    ReferenceId = scheduleId,
+                    Note = $"Agency earnings from schedule {scheduleId}",
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                });
+            }
+        }
+
     }
 }

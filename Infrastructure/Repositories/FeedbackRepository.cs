@@ -122,5 +122,16 @@ namespace TouRest.Infrastructure.Repositories
             }
             return await query.ToListAsync();
         }
+        public async Task<(double AverageRating, int TotalReviews)> GetRatingStatsByAgencyIdAsync(Guid agencyId)
+        {
+            var ratings = await _context.Feedbacks
+                .Where(f => f.BookingItinerary.ItinerarySchedule.Itinerary.AgencyId == agencyId
+                    && f.Status == FeedbackStatus.Active)
+                .Select(f => f.Rating)
+                .ToListAsync();
+
+            if (!ratings.Any()) return (0, 0);
+            return (Math.Round(ratings.Average(), 1), ratings.Count);
+        }
     }
 }

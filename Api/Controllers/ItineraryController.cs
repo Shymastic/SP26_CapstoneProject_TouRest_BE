@@ -238,5 +238,12 @@ namespace TouRest.Api.Controllers
             }).ToList();
             return ApiResponseFactory.Ok(result);
         }
+        [HttpPut("{id:guid}/schedules/{scheduleId:guid}/status")]
+        [Authorize(Roles = "ADMIN, AGENCY")]
+        public async Task<IActionResult> UpdateScheduleStatus(Guid id, Guid scheduleId,[FromBody] ScheduleUpdateStatusRequest request)
+        {
+            await _scheduleService.UpdateStatusAsync(scheduleId, request.Status);
+            return ApiResponseFactory.NoContent();
+        }
     }
 }

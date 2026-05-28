@@ -1,5 +1,4 @@
 using DotNetEnv;
-using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
@@ -126,9 +125,6 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("ProviderOrAdmin", policy => policy.RequireRole(RoleCodes.Provider, RoleCodes.Admin));
 });
 builder.Services.AddApiServices();
-builder.Services.AddHangfire(config =>
-    config.UseSqlServerStorage(Environment.GetEnvironmentVariable("DATABASE_CONNECTION")));
-builder.Services.AddHangfireServer();
 builder.Services.AddSignalR();
 var emailSettings = new EmailSettings
 {
@@ -149,11 +145,14 @@ var app = builder.Build();
 app.UseMiddleware<GlobalExceptionHandler>();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+// Remove the if statement wrapper entirely
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+    // This line ensures Swagger loads directly at the root URL if you want
+    c.RoutePrefix = "swagger"; 
+});
 
 app.UseCors("AllowFrontend");
 

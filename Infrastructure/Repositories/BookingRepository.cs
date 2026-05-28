@@ -23,6 +23,8 @@ namespace TouRest.Infrastructure.Repositories
         {
             return await _context.Bookings
                 .Include(b => b.BookingItineraries)
+                    .ThenInclude(bi => bi.ItinerarySchedule)
+                        .ThenInclude(s => s.Itinerary)
                 .FirstOrDefaultAsync(b => b.Id == bookingId);
         }
     }

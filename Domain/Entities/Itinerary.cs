@@ -36,6 +36,6 @@ namespace TouRest.Domain.Entities
 
         // Navigation properties
         public Agency Agency { get; set; } = null!;
-        public ICollection<ItineraryStop> Stops { get; set; } = [];
+        public ICollection<ItineraryStop> Stops { get; set; } = new List<ItineraryStop>();
     }
 }

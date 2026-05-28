@@ -8,7 +8,6 @@ using TouRest.Application.DTOs.WishList;
 using TouRest.Application.Interfaces;
 using TouRest.Domain.Enums;
 using TouRest.Domain.Entities;
-using TouRest.Domain.Enums;
 using TouRest.Domain.Interfaces;
 
 namespace TouRest.Application.Services

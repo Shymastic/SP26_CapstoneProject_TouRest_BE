@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TouRest.Application.DTOs.Agency;
+using TouRest.Domain.DTOs;
 using TouRest.Domain.Entities;
 using TouRest.Domain.Enums;
 using TouRest.Domain.Interfaces;
@@ -11,6 +13,7 @@ using TouRest.Infrastructure.Persistence;
 
 namespace TouRest.Infrastructure.Repositories
 {
+
     public class AgencyUserRepository : BaseRepository<AgencyUser>, IAgencyUserRepository
     {
         public AgencyUserRepository(AppDbContext context) : base(context) { }
@@ -54,6 +57,29 @@ namespace TouRest.Infrastructure.Repositories
             return await _context.AgencyUsers.Include(au => au.User)
                 .FirstOrDefaultAsync(au => au.UserId == userId);
         }
-       
+        public async Task<List<AgencyGuideDTO>> GetGuidesByAgencyIdAsync(Guid agencyId)
+        {
+            var now = DateTime.UtcNow;
+            return await _context.AgencyUsers
+                .Include(au => au.User)
+                .Where(au => au.AgencyId == agencyId && au.Role == AgencyUserRole.TourGuide)
+                .AsNoTracking()
+                .Select(au => new AgencyGuideDTO
+                {
+                    UserId = au.UserId,
+                    FullName = au.User.FullName ?? au.User.Username,
+                    Phone = au.User.Phone,
+                    Avatar = au.User.UserAvatar,
+                    ActiveTours = _context.ItinerarySchedules
+                        .Count(s => s.GuideId == au.UserId
+                            && s.StartTime >= now
+                            && s.Status == ItineraryScheduleStatus.Confirmed),
+                    CompletedTotal = _context.ItinerarySchedules
+                        .Count(s => s.GuideId == au.UserId
+                            && s.Status == ItineraryScheduleStatus.Completed)
+                })
+                .ToListAsync();
+        }
+
     }
 }

@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TouRest.Application.DTOs.Agency;
 using TouRest.Application.Interfaces;
+using TouRest.Domain.DTOs;
 using TouRest.Domain.Enums;
 using TouRest.Domain.Interfaces;
 
@@ -63,6 +64,13 @@ namespace TouRest.Application.Services
         public async Task<AgencyUserDTO?> GetAgencyUserByUserId(Guid userId)
         {
             return _mapper.Map<AgencyUserDTO>(await _agencyUserRepository.GetAgencyUserByUserId(userId));
+        }
+        
+        public async Task<List<AgencyGuideDTO>> GetGuidesAsync(Guid agencyId)
+        {
+            if (agencyId == Guid.Empty)
+                throw new ArgumentException("AgencyId cannot be empty", nameof(agencyId));
+            return await _agencyUserRepository.GetGuidesByAgencyIdAsync(agencyId);
         }
     }
 }

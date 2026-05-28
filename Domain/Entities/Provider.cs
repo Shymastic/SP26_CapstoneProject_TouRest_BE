@@ -37,6 +37,7 @@ namespace TouRest.Domain.Entities
         public string ContactPhone { get; set; } = null!;
         public Guid CreateByUserId { get; set; }
         public User User { get; set; } = null!;
+        public ICollection<ProviderUser> ProviderUsers { get; set; } = [];
 
     }
 }
