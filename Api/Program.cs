@@ -1,5 +1,4 @@
 using DotNetEnv;
-using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
@@ -126,9 +125,6 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("ProviderOrAdmin", policy => policy.RequireRole(RoleCodes.Provider, RoleCodes.Admin));
 });
 builder.Services.AddApiServices();
-builder.Services.AddHangfire(config =>
-    config.UseSqlServerStorage(Environment.GetEnvironmentVariable("DATABASE_CONNECTION")));
-builder.Services.AddHangfireServer();
 builder.Services.AddSignalR();
 var emailSettings = new EmailSettings
 {
