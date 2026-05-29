@@ -3,6 +3,7 @@ using TouRest.Application.Interfaces;
 using TouRest.Application.Services;
 using TouRest.Domain.Interfaces;
 using TouRest.Infrastructure.Repositories;
+using TouRest.Infrastructure.Persistence;
 
 namespace TouRest.Api.Extensions
 {
@@ -15,6 +16,7 @@ namespace TouRest.Api.Extensions
             services.AddScoped<IAgencyRepository, AgencyRepository>();
             services.AddScoped<IAgencyUserRepository, AgencyUserRepository>();
             services.AddScoped<IBookingItineraryRepository, BookingItineraryRepository>();
+            services.AddScoped<IBookingPassengerRepository, BookingPassengerRepository>();
             services.AddScoped<IBookingRepository, BookingRepository>();
             services.AddScoped<IFeedbackRepository, FeedbackRepository>();
             services.AddScoped<IItineraryActivityRepository, ItineraryActivityRepository>();
@@ -41,6 +43,9 @@ namespace TouRest.Api.Extensions
             services.AddScoped<IItineraryScheduleRepository, ItineraryScheduleRepository>();
             services.AddScoped<IVehicleRepository, VehicleRepository>();
             services.AddScoped<IAgencyDashboardRepository, AgencyDashboardRepository>();
+            services.AddScoped<IProviderDashboardRepository, ProviderDashboardRepository>();
+            services.AddScoped<IItineraryTrackingRepository, ItineraryTrackingRepository>();
+            services.AddScoped<IProviderStaffRepository, ProviderStaffRepository>();
 
             //Add services to the DI container, count = 15
             services.AddScoped<IAdminService, AdminService>();
@@ -72,6 +77,9 @@ namespace TouRest.Api.Extensions
             services.AddScoped<IVehicleService, VehicleService>();
             services.AddScoped<INotificationService, NotificationService>();
             services.AddScoped<IAgencyDashboardService, AgencyDashboardService>();
+            services.AddScoped<IProviderDashboardService, ProviderDashboardService>();
+            services.AddScoped<IItineraryTrackingService, ItineraryTrackingService>();
+            services.AddScoped<IProviderStaffService, ProviderStaffService>();
             return services;
         }
     }

@@ -41,4 +41,22 @@ namespace TouRest.Domain.DTOs
         public DateTime ScheduledTime { get; set; }
         public bool IsUrgent { get; set; }
     }
+
+    public class ActivePackageDto
+    {
+        public Guid PackageId { get; set; }
+        public string Name { get; set; } = null!;
+        public int ServicesCount { get; set; }
+        public int AgenciesCount { get; set; }
+        public long Revenue { get; set; }
+        public int DemandPercent { get; set; }
+    }
+
+    public class ProviderTopAgencyDto
+    {
+        public Guid AgencyId { get; set; }
+        public string Name { get; set; } = null!;
+        public int JobsThisMonth { get; set; }
+        public long RevenueThisMonth { get; set; }
+    }
 }

@@ -9,10 +9,17 @@ namespace TouRest.Application.Services
     public class ItineraryScheduleService : IItineraryScheduleService
     {
         private readonly IItineraryScheduleRepository _repo;
+        private readonly INotificationRepository      _notificationRepo;
+        private readonly IAgencyUserRepository        _agencyUserRepo;
 
-        public ItineraryScheduleService(IItineraryScheduleRepository repo)
+        public ItineraryScheduleService(
+            IItineraryScheduleRepository repo,
+            INotificationRepository notificationRepo,
+            IAgencyUserRepository agencyUserRepo)
         {
-            _repo = repo;
+            _repo             = repo;
+            _notificationRepo = notificationRepo;
+            _agencyUserRepo   = agencyUserRepo;
         }
 
         public async Task<List<ItineraryScheduleDTO>> GetByItineraryIdAsync(Guid itineraryId)
@@ -37,12 +44,31 @@ namespace TouRest.Application.Services
                 Spot        = request.Spot,
                 SpotLeft    = request.Spot,
                 GuideId     = request.GuideId,
+                Status      = ItineraryScheduleStatus.Pending,
                 CreatedAt   = DateTime.UtcNow,
             };
             var saved = await _repo.CreateAsync(schedule);
 
-            // Reload with Guide navigation to populate GuideName
-            var full = await _repo.GetByIdWithGuideAsync(saved.Id);
+            // Load full details for notification + return value
+            var full = await _repo.GetScheduleWithDetails(saved.Id);
+
+            // Notify guide if assigned
+            if (request.GuideId.HasValue && full?.Itinerary != null)
+            {
+                var itineraryName = full.Itinerary.Name;
+                var startDate     = request.StartTime.ToString("dd MMM yyyy");
+                var endDate       = request.EndTime.ToString("dd MMM yyyy");
+
+                await _notificationRepo.CreateAsync(new Notification
+                {
+                    RecipientUserId = request.GuideId.Value,
+                    Title           = "New Job Assignment",
+                    Message         = $"You have been assigned as tour guide for \"{itineraryName}\" ({startDate} – {endDate}). Please go to your Jobs page to accept or reject.",
+                    EntityType      = NotificationEntityType.Itinerary,
+                    EntityId        = saved.Id,
+                });
+            }
+
             return MapToDTO(full ?? saved);
         }
 
@@ -121,6 +147,11 @@ namespace TouRest.Application.Services
             schedule.Status    = ItineraryScheduleStatus.Confirmed;
             schedule.UpdatedAt = DateTime.UtcNow;
             await _repo.UpdateAsync(schedule);
+
+            // Notify all agency managers
+            await NotifyManagersAsync(scheduleId,
+                title:   "Schedule Confirmed",
+                message: s => $"Your guide has accepted the schedule for \"{s.Itinerary?.Name}\". The tour is now confirmed.");
         }
 
         public async Task RejectScheduleAsync(Guid scheduleId, Guid guideId)
@@ -134,11 +165,36 @@ namespace TouRest.Application.Services
             if (schedule.Status != ItineraryScheduleStatus.Pending)
                 throw new InvalidOperationException("Only pending schedules can be rejected");
 
-            // Unassign guide so the agency can reassign another
             schedule.GuideId   = null;
             schedule.Status    = ItineraryScheduleStatus.Pending;
             schedule.UpdatedAt = DateTime.UtcNow;
             await _repo.UpdateAsync(schedule);
+
+            // Notify all agency managers
+            await NotifyManagersAsync(scheduleId,
+                title:   "Schedule Rejected",
+                message: s => $"Your guide has declined the schedule for \"{s.Itinerary?.Name}\". Please assign a new guide.");
+        }
+
+        private async Task NotifyManagersAsync(Guid scheduleId, string title, Func<ItinerarySchedule, string> message)
+        {
+            var details = await _repo.GetScheduleWithDetails(scheduleId);
+            if (details?.Itinerary == null) return;
+
+            var agencyUsers = await _agencyUserRepo.GetAgencyUsers(details.Itinerary.AgencyId);
+            var managers    = agencyUsers.Where(u => u.Role == AgencyUserRole.Manager);
+
+            foreach (var manager in managers)
+            {
+                await _notificationRepo.CreateAsync(new Notification
+                {
+                    RecipientUserId = manager.UserId,
+                    Title           = title,
+                    Message         = message(details),
+                    EntityType      = NotificationEntityType.Itinerary,
+                    EntityId        = scheduleId,
+                });
+            }
         }
     }
 }

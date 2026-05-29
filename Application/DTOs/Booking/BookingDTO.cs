@@ -39,5 +39,6 @@ namespace TouRest.Application.DTOs.Booking
         public string? InternalNote { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
+        public List<BookingPassengerDTO> Passengers { get; set; } = [];
     }
 }

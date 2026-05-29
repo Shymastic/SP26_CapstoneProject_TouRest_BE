@@ -58,6 +58,29 @@ namespace TouRest.Api.Controllers
         }
 
         /// <summary>
+        /// Get latest payment for a booking (any status) — used by frontend polling to detect Paid
+        /// </summary>
+        [HttpGet("latest/{bookingId}")]
+        public async Task<IActionResult> GetLatestPayment(Guid bookingId)
+        {
+            var result = await _paymentService.GetLatestPaymentAsync(bookingId);
+            if (result == null)
+                return NotFound(new { message = "No payment found for this booking." });
+            return ApiResponseFactory.Ok(result);
+        }
+
+        /// <summary>
+        /// Finalize payment after PayOS redirect — verifies with PayOS API and confirms DB state.
+        /// Call this from the success page when code=00 is in the return URL.
+        /// </summary>
+        [HttpPost("finalize/{orderCode:long}")]
+        public async Task<IActionResult> FinalizePayment(long orderCode)
+        {
+            await _paymentService.FinalizePaymentByOrderCodeAsync(orderCode);
+            return ApiResponseFactory.Ok("Payment finalized");
+        }
+
+        /// <summary>
         /// PayOS webhook — called by PayOS after payment completes. Must be AllowAnonymous.
         /// </summary>
         [HttpPost("webhook")]

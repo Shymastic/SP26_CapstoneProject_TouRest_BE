@@ -100,6 +100,7 @@ namespace TouRest.Application.Services
                     $"Invalid transition from {existing.Status} to {update.Status}");
             existing.UpdatedAt = DateTime.UtcNow;
             _mapper.Map(update, existing);
+            existing.Status = update.Status;
             var result = await _itineraryRepository.UpdateAsync(existing);
             return _mapper.Map<ItineraryDTO>(result);
         }
@@ -112,7 +113,8 @@ namespace TouRest.Application.Services
             var images = await _imageRepository.GetByTypeAsync(Domain.Enums.ImageType.Itinerary, id);
             dto.Images = _mapper.Map<List<DTOs.Image.ImageDTO>>(images);
             var schedules = await _scheduleRepository.GetByItineraryIdAsync(id);
-            dto.Schedules = _mapper.Map<List<ItineraryScheduleDTO>>(schedules);
+            dto.Schedules = _mapper.Map<List<ItineraryScheduleDTO>>(
+                schedules.Where(s => s.Status == Domain.Enums.ItineraryScheduleStatus.Confirmed).ToList());
             return dto;
         }
         public async Task<ItineraryDTO?> UpdateItineraryStatus(Guid id, ItineraryUpdateStatusRequest request)
@@ -156,7 +158,7 @@ namespace TouRest.Application.Services
                     Latitude = stopReq.Latitude,
                     Address = stopReq.Address?.Trim(),
                     ProviderId = stopReq.ProviderId,
-                    VehicleId = stopReq.VehicleId ?? Guid.Empty,
+                    VehicleId = stopReq.VehicleId,
                     CreatedAt = DateTime.UtcNow,
                 };
                 var savedStop = await _stopRepository.CreateAsync(stop);

@@ -36,6 +36,8 @@ namespace TouRest.Infrastructure.Repositories
         {
             return await _context.ItinerarySchedules
                 .Include(s => s.Itinerary)
+                .Include(s => s.Guide)
+                .AsNoTracking()
                 .FirstOrDefaultAsync(s => s.Id == scheduleId);
         }
 

@@ -174,13 +174,22 @@ namespace TouRest.Application.Services
             if (user == null)
                 throw new UnauthorizedAccessException("User not found");
 
+            string? subRole = null;
+            if (user.Role.Code.Equals("AGENCY", StringComparison.OrdinalIgnoreCase))
+            {
+                var agencyUser = await _agencyUserRepository.GetAgencyUserByUserId(userId);
+                if (agencyUser != null)
+                    subRole = agencyUser.Role.ToString().ToLower();
+            }
+
             return new MeDTO
             {
                 Id = user.Id,
                 Username = user.Username,
                 Email = user.Email,
                 Phone = user.Phone,
-                Role = user.Role.Code.ToLower()
+                Role = user.Role.Code.ToLower(),
+                SubRole = subRole
             };
         }
 

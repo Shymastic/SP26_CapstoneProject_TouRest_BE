@@ -17,13 +17,17 @@ namespace TouRest.Api.Controllers
         private readonly IAuthService _authService;
         private readonly IItineraryScheduleService _scheduleService;
         private readonly IProviderDashboardService _dashboardService;
+        private readonly IProviderStaffService _staffService;
+        private readonly IStorageService _storageService;
 
-        public ProviderController(IProviderService providerService, IAuthService authService, IItineraryScheduleService scheduleService, IProviderDashboardService dashboardService)
+        public ProviderController(IProviderService providerService, IAuthService authService, IItineraryScheduleService scheduleService, IProviderDashboardService dashboardService, IProviderStaffService staffService, IStorageService storageService)
         {
             _providerService = providerService;
             _authService = authService;
             _scheduleService = scheduleService;
             _dashboardService = dashboardService;
+            _staffService = staffService;
+            _storageService = storageService;
         }
 
         [HttpGet]
@@ -123,6 +127,20 @@ namespace TouRest.Api.Controllers
             return ApiResponseFactory.Ok(result);
         }
 
+        [HttpGet("dashboard/active-packages")]
+        public async Task<IActionResult> GetActivePackages([FromQuery] Guid providerId)
+        {
+            var result = await _dashboardService.GetActivePackagesAsync(providerId);
+            return ApiResponseFactory.Ok(result);
+        }
+
+        [HttpGet("dashboard/top-agencies")]
+        public async Task<IActionResult> GetTopAgencies([FromQuery] Guid providerId)
+        {
+            var result = await _dashboardService.GetTopAgenciesAsync(providerId);
+            return ApiResponseFactory.Ok(result);
+        }
+
         [HttpGet("jobs/schedules")]
         [Authorize(Roles = "PROVIDER")]
         public async Task<IActionResult> GetJobSchedules()
@@ -131,6 +149,49 @@ namespace TouRest.Api.Controllers
             var provider = await _providerService.GetByUserIdAsync(userId)
                 ?? throw new KeyNotFoundException("No provider found for the current user.");
             var result = await _scheduleService.GetByProviderIdAsync(provider.Id);
+            return ApiResponseFactory.Ok(result);
+        }
+
+        [HttpGet("groups")]
+        [Authorize(Roles = "PROVIDER")]
+        public async Task<IActionResult> GetTourGroups()
+        {
+            var userId = User.GetUserId();
+            var provider = await _providerService.GetByUserIdAsync(userId)
+                ?? throw new KeyNotFoundException("No provider found for the current user.");
+            var result = await _staffService.GetTourGroupsAsync(provider.Id);
+            return ApiResponseFactory.Ok(result);
+        }
+
+        [HttpGet("groups/{scheduleId:guid}/patients")]
+        [Authorize(Roles = "PROVIDER")]
+        public async Task<IActionResult> GetPatients(Guid scheduleId)
+        {
+            var result = await _staffService.GetPatientsAsync(scheduleId);
+            return ApiResponseFactory.Ok(result);
+        }
+
+        [HttpGet("groups/{scheduleId:guid}/passengers")]
+        [Authorize(Roles = "PROVIDER")]
+        public async Task<IActionResult> GetPassengers(Guid scheduleId)
+        {
+            var result = await _staffService.GetPassengersAsync(scheduleId);
+            return ApiResponseFactory.Ok(result);
+        }
+
+        [HttpPost("groups/{scheduleId:guid}/passengers/{passengerId:guid}/results")]
+        [Authorize(Roles = "PROVIDER")]
+        public async Task<IActionResult> SendResult(Guid scheduleId, Guid passengerId, [FromForm] string? notes, IFormFileCollection? images)
+        {
+            var userId = User.GetUserId();
+            var provider = await _providerService.GetByUserIdAsync(userId)
+                ?? throw new KeyNotFoundException("No provider found for the current user.");
+
+            List<string> imageUrls = [];
+            if (images != null && images.Count > 0)
+                imageUrls = await _storageService.UploadManyAsync(images.ToList());
+
+            var result = await _staffService.SendMedicalResultAsync(passengerId, scheduleId, provider.Id, notes, imageUrls);
             return ApiResponseFactory.Ok(result);
         }
 

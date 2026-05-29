@@ -27,6 +27,7 @@ namespace TouRest.Infrastructure
             services.AddScoped<IAgencyRepository, AgencyRepository>();
             services.AddScoped<IAgencyUserRepository, AgencyUserRepository>();
             services.AddScoped<INotificationRepository, NotificationRepository>();
+            services.AddScoped<IBookingPassengerRepository, BookingPassengerRepository>();
 
             // Register Services
             services.AddScoped<IJwtService, JwtService>();

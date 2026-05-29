@@ -14,5 +14,7 @@ namespace TouRest.Application.Interfaces
         Task<PaymentDTO> CancelPaymentAsync(Guid bookingId, Guid userId);
         Task HandleWebhookAsync(Webhook webhookData);
         Task<PaymentDTO> GetActivePaymentAsync(Guid bookingId);
+        Task<PaymentDTO?> GetLatestPaymentAsync(Guid bookingId);
+        Task FinalizePaymentByOrderCodeAsync(long orderCode);
     }
 }

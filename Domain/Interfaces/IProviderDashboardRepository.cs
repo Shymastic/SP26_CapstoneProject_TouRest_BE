@@ -12,5 +12,7 @@ namespace TouRest.Domain.Interfaces
         Task<ProviderDashboardStatsDto> GetStatsAsync(Guid providerId);
         Task<ProviderJobsTrendDto> GetJobsTrendAsync(Guid providerId, int year);
         Task<List<PendingRequestDto>> GetPendingRequestsAsync(Guid providerId);
+        Task<List<ActivePackageDto>> GetActivePackagesAsync(Guid providerId);
+        Task<List<ProviderTopAgencyDto>> GetTopAgenciesAsync(Guid providerId);
     }
 }

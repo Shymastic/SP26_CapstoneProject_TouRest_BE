@@ -26,7 +26,13 @@ namespace TouRest.Application.Mappings
     .ForMember(dest => dest.DiscountAmount, opt => opt.MapFrom(src =>
         src.Price - src.FinalPrice))
     .ForMember(dest => dest.HasFeedback, opt => opt.MapFrom(src =>
-        src.Feedback != null));
+        src.Feedback != null))
+    .ForMember(dest => dest.ItineraryId, opt => opt.MapFrom(src =>
+        (Guid?)src.ItinerarySchedule.ItineraryId))
+    .ForMember(dest => dest.GuideName, opt => opt.MapFrom(src =>
+        src.ItinerarySchedule.Guide != null ? src.ItinerarySchedule.Guide.FullName ?? src.ItinerarySchedule.Guide.Username : null))
+    .ForMember(dest => dest.GuidePhone, opt => opt.MapFrom(src =>
+        src.ItinerarySchedule.Guide != null ? src.ItinerarySchedule.Guide.Phone : null));
         }
 
     }

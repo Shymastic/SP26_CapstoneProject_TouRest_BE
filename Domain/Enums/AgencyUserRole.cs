@@ -9,7 +9,6 @@ namespace TouRest.Domain.Enums
     public enum AgencyUserRole
     {
         Manager = 0,
-        Staff = 1,
         TourGuide = 2
     }
 }

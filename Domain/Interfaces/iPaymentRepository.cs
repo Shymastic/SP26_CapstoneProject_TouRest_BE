@@ -11,6 +11,7 @@ namespace TouRest.Domain.Interfaces
     {
         Task<Payment?> GetByOrderCodeAsync(long orderCode);
         Task<Payment?> GetActivePaymentByBookingIdAsync(Guid bookingId);
+        Task<Payment?> GetLatestPaymentByBookingIdAsync(Guid bookingId);
         Task<List<Payment>> GetPaymentsByBookingIdAsync(Guid bookingId);
     }
 }

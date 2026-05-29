@@ -59,6 +59,22 @@ namespace TouRest.Api.Controllers
             var users = await _agencyUserService.GetAgencyUsers(agencyId);
             return ApiResponseFactory.Ok(users);
         }
+
+        [HttpGet("tour-guides")]
+        [Authorize(Roles = "AGENCY")]
+        public async Task<IActionResult> GetTourGuides([FromQuery] Guid agencyId)
+        {
+            var guides = await _agencyUserService.GetTourGuidesAsync(agencyId);
+            return ApiResponseFactory.Ok(guides);
+        }
+
+        [HttpPost("{agencyId:guid}/create-guide")]
+        [Authorize(Roles = "AGENCY")]
+        public async Task<IActionResult> CreateGuideAccount(Guid agencyId, [FromBody] CreateGuideRequest request)
+        {
+            var result = await _agencyUserService.CreateGuideAccountAsync(agencyId, request);
+            return ApiResponseFactory.Created(result, "Tour guide account created successfully");
+        }
         [HttpGet("me")]
         [Authorize(Roles = "AGENCY")]
         public async Task<IActionResult> GetMyAgency()
