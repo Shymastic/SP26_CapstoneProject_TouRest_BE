@@ -74,7 +74,7 @@ namespace TouRest.Infrastructure.Persistence
             // Configure Agency - AgencyUser relationship
             modelBuilder.Entity<AgencyUser>()
                 .HasOne(au => au.Agency)
-                .WithMany()
+                .WithMany(a => a.AgencyUsers)
                 .HasForeignKey(au => au.AgencyId)
                 .OnDelete(DeleteBehavior.Cascade);
 
@@ -204,7 +204,7 @@ namespace TouRest.Infrastructure.Persistence
             // Configure ProviderUser (many-to-many)
             modelBuilder.Entity<ProviderUser>()
                 .HasOne(pu => pu.Provider)
-                .WithMany()
+                .WithMany(p => p.ProviderUsers)
                 .HasForeignKey(pu => pu.ProviderId)
                 .OnDelete(DeleteBehavior.Cascade);
 
@@ -222,11 +222,12 @@ namespace TouRest.Infrastructure.Persistence
 
             // Configure Feedback - BookingItinerary relationship
             modelBuilder.Entity<Feedback>()
-                .HasOne(f => f.BookingItinerary)
-                .WithMany()
-                .HasForeignKey(f => f.BookingItineraryId)
-                .OnDelete(DeleteBehavior.Cascade);
-
+    .HasOne(f => f.BookingItinerary)
+    .WithOne(b => b.Feedback)
+    .HasForeignKey<Feedback>(f => f.BookingItineraryId)
+    .OnDelete(DeleteBehavior.Cascade); 
+            modelBuilder.Entity<Feedback>()
+                .HasIndex(f => f.RepliedByUserId);
             modelBuilder.Entity<Refund>()
                 .HasOne(r => r.Payment)
                 .WithOne(p => p.Refund)
@@ -386,6 +387,8 @@ namespace TouRest.Infrastructure.Persistence
 
             // ============= UNIQUE CONSTRAINTS =============
 
+            modelBuilder.Entity<BookingItinerary>()
+                .HasIndex(bi => bi.BookingId);
             modelBuilder.Entity<Payment>()
                 .HasIndex(p => p.BookingId);
             // Unique constraint on OrderCode

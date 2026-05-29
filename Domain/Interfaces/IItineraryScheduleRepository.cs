@@ -15,5 +15,7 @@ namespace TouRest.Domain.Interfaces
         Task<List<ItinerarySchedule>> GetByAgencyIdAsync(Guid agencyId);
         Task<List<ItinerarySchedule>> GetByGuideIdAsync(Guid guideId);
         Task<List<ItinerarySchedule>> GetByProviderIdAsync(Guid providerId);
+        Task<int> CountCompletedByAgencyIdAsync(Guid agencyId);
+        Task<ItinerarySchedule?> GetWithStopsAndActivitiesAsync(Guid scheduleId);
     }
 }

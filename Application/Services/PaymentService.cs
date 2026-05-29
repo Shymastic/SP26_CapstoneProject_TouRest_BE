@@ -21,6 +21,8 @@ namespace TouRest.Application.Services
         private readonly IBookingRepository _bookingRepository;
         private readonly IBookingItineraryRepository _bookingItineraryRepository;
         private readonly INotificationRepository _notificationRepository;
+        private readonly IWalletRepository _walletRepository;
+        private readonly IWalletTransactionRepository _walletTransactionRepository;
         private readonly PayOSClient _payOS;
         private readonly IMapper _mapper;
 
@@ -29,6 +31,8 @@ namespace TouRest.Application.Services
             IBookingRepository bookingRepository,
             IBookingItineraryRepository bookingItineraryRepository,
             INotificationRepository notificationRepository,
+            IWalletRepository walletRepository,
+            IWalletTransactionRepository walletTransactionRepository,
             PayOSClient payOS,
             IMapper mapper)
         {
@@ -36,6 +40,8 @@ namespace TouRest.Application.Services
             _bookingRepository = bookingRepository;
             _bookingItineraryRepository = bookingItineraryRepository;
             _notificationRepository = notificationRepository;
+            _walletRepository = walletRepository;
+            _walletTransactionRepository = walletTransactionRepository;
             _payOS = payOS;
             _mapper = mapper;
         }
@@ -59,9 +65,9 @@ namespace TouRest.Application.Services
             // grossAmount = total before discount (bi.Price = baseAmount after BookingService fix)
             // discountAmount = bi.Price - bi.FinalPrice = discount applied at booking time
             // finalAmount = booking.TotalAmount (already NET = grossAmount - discount)
-            var grossAmount    = booking.BookingItineraries.Sum(bi => bi.Price);
+            var grossAmount = booking.BookingItineraries.Sum(bi => bi.Price);
             var discountAmount = booking.BookingItineraries.Sum(bi => bi.Price - bi.FinalPrice);
-            var finalAmount    = booking.TotalAmount;
+            var finalAmount = booking.TotalAmount;
 
 
             var orderCode = long.Parse(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString()[^9..]);
@@ -138,15 +144,52 @@ namespace TouRest.Application.Services
 
                     await _notificationRepository.CreateAsync(new Notification
                     {
-                        Id              = Guid.NewGuid(),
+                        Id = Guid.NewGuid(),
                         RecipientUserId = booking.UserId,
-                        Title           = "Payment Confirmed",
-                        Message         = $"Your payment of {payment.FinalAmount:N0}đ for booking #{booking.Code} has been confirmed.",
-                        EntityType      = NotificationEntityType.Booking,
-                        EntityId        = payment.BookingId,
-                        IsRead          = false,
-                        CreatedAt       = DateTime.UtcNow,
+                        Title = "Payment Confirmed",
+                        Message = $"Your payment of {payment.FinalAmount:N0}đ for booking #{booking.Code} has been confirmed.",
+                        EntityType = NotificationEntityType.Booking,
+                        EntityId = payment.BookingId,
+                        IsRead = false,
+                        CreatedAt = DateTime.UtcNow,
                     });
+                    //after confirm booking, distribute earnings to agencies
+                    var bookingWithDetails = await _bookingRepository.GetBookingWithItineraries(payment.BookingId);
+                    if (bookingWithDetails != null)
+                    {
+                        // Group by agency
+                        var agencyEarnings = bookingWithDetails.BookingItineraries
+                            .GroupBy(bi => bi.ItinerarySchedule.Itinerary.AgencyId)
+                            .Select(g => new
+                            {
+                                AgencyId = g.Key,
+                                TotalEarning = g.Sum(bi => bi.FinalPrice)
+                            });
+
+                        foreach (var earning in agencyEarnings)
+                        {
+                            var agencyWallet = await _walletRepository.GetByAgencyIdAsync(earning.AgencyId);
+                            if (agencyWallet != null)
+                            {
+                                agencyWallet.Balance += earning.TotalEarning;
+                                agencyWallet.UpdatedAt = DateTime.UtcNow;
+                                await _walletRepository.UpdateAsync(agencyWallet);
+
+                                await _walletTransactionRepository.CreateAsync(new WalletTransaction
+                                {
+                                    Id = Guid.NewGuid(),
+                                    WalletId = agencyWallet.Id,
+                                    Amount = earning.TotalEarning,
+                                    Type = WalletTransactionType.Credit,
+                                    Reason = WalletTransactionReason.BookingEarning,
+                                    ReferenceId = payment.BookingId,
+                                    Note = $"Booking {booking.Code} payment received",
+                                    CreatedAt = DateTime.UtcNow,
+                                    UpdatedAt = DateTime.UtcNow
+                                });
+                            }
+                        }
+                    }
                 }
             }
             else // failed or cancelled

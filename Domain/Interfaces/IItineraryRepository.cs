@@ -13,6 +13,7 @@ namespace TouRest.Domain.Interfaces
         Task<List<Itinerary>> GetItineraries(ItinerarySearch search);
         Task<int> CountItineraries(ItinerarySearch search);
         Task<List<Itinerary>> GetByAgencyIdAsync(Guid agencyId);
+        Task<int> CountActiveByAgencyIdAsync(Guid agencyId);
     }
     public class ItinerarySearch
     {

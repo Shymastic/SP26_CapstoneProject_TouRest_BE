@@ -5,6 +5,7 @@ using TouRest.Api.Common;
 using TouRest.Api.Extensions;
 using TouRest.Application.DTOs.Agency;
 using TouRest.Application.Interfaces;
+using TouRest.Application.Services;
 
 namespace TouRest.Api.Controllers
 {
@@ -83,6 +84,59 @@ namespace TouRest.Api.Controllers
             var result = await _agencyService.GetMyAgency(user);
             return ApiResponseFactory.Ok(result);
         }
+
+        [HttpGet("{id:guid}/guides")]
+        public async Task<IActionResult> GetAgencyGuides(Guid id)
+        {
+            var result = await _agencyUserService.GetGuidesAsync(id);
+            return ApiResponseFactory.Ok(result);
+        }
+        // Dashboard endpoints
+        [HttpGet("dashboard/stats")]
+        [Authorize(Roles = "AGENCY")]
+        public async Task<IActionResult> GetDashboardStats()
+        {
+            var agencyId = await GetAgencyId();
+            var result = await _dashboardService.GetStatsAsync(agencyId);
+            return ApiResponseFactory.Ok(result);
+        }
+
+        [HttpGet("dashboard/schedules/upcoming")]
+        [Authorize(Roles = "AGENCY")]
+        public async Task<IActionResult> GetUpcomingSchedules()
+        {
+            var agencyId = await GetAgencyId();
+            var result = await _dashboardService.GetUpcomingSchedulesAsync(agencyId);
+            return ApiResponseFactory.Ok(result);
+        }
+
+        [HttpGet("dashboard/bookings/recent")]
+        [Authorize(Roles = "AGENCY")]
+        public async Task<IActionResult> GetRecentBookings()
+        {
+            var agencyId = await GetAgencyId();
+            var result = await _dashboardService.GetRecentBookingsAsync(agencyId);
+            return ApiResponseFactory.Ok(result);
+        }
+
+        [HttpGet("dashboard/guides/workload")]
+        [Authorize(Roles = "AGENCY")]
+        public async Task<IActionResult> GetGuideWorkload()
+        {
+            var agencyId = await GetAgencyId();
+            var result = await _dashboardService.GetGuideWorkloadAsync(agencyId);
+            return ApiResponseFactory.Ok(result);
+        }
+        // Agency's own guide list
+        [HttpGet("guides")]
+        [Authorize(Roles = "AGENCY")]
+        public async Task<IActionResult> GetMyGuides()
+        {
+            var agencyId = await GetAgencyId();
+            var result = await _agencyUserService.GetGuidesAsync(agencyId);
+            return ApiResponseFactory.Ok(result);
+        }
+
         [HttpPost("{agencyId:guid}/add-user")]
         [Authorize(Roles = "AGENCY")]
         public async Task<IActionResult> AddUserToAgency(Guid agencyId, [FromBody] AddUserIntoAgencyRequest request)
@@ -140,42 +194,7 @@ namespace TouRest.Api.Controllers
 
             return ApiResponseFactory.Created(new { }, "Agency request registered successfully");
         }
-        // Dashboard endpoints
-        [HttpGet("dashboard/stats")]
-        [Authorize(Roles = "AGENCY")]
-        public async Task<IActionResult> GetDashboardStats()
-        {
-            var agencyId = await GetAgencyId();
-            var result = await _dashboardService.GetStatsAsync(agencyId);
-            return ApiResponseFactory.Ok(result);
-        }
 
-        [HttpGet("dashboard/schedules/upcoming")]
-        [Authorize(Roles = "AGENCY")]
-        public async Task<IActionResult> GetUpcomingSchedules()
-        {
-            var agencyId = await GetAgencyId();
-            var result = await _dashboardService.GetUpcomingSchedulesAsync(agencyId);
-            return ApiResponseFactory.Ok(result);
-        }
-
-        [HttpGet("dashboard/bookings/recent")]
-        [Authorize(Roles = "AGENCY")]
-        public async Task<IActionResult> GetRecentBookings()
-        {
-            var agencyId = await GetAgencyId();
-            var result = await _dashboardService.GetRecentBookingsAsync(agencyId);
-            return ApiResponseFactory.Ok(result);
-        }
-
-        [HttpGet("dashboard/guides/workload")]
-        [Authorize(Roles = "AGENCY")]
-        public async Task<IActionResult> GetGuideWorkload()
-        {
-            var agencyId = await GetAgencyId();
-            var result = await _dashboardService.GetGuideWorkloadAsync(agencyId);
-            return ApiResponseFactory.Ok(result);
-        }
         private async Task<Guid> GetAgencyId()
         {
             var userId = User.GetUserId();

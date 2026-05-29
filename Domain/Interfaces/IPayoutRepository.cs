@@ -9,5 +9,7 @@ namespace TouRest.Domain.Interfaces
 {
     public interface IPayoutRepository : IBaseRepository<Payout>
     {
+        Task<List<Payout>> GetByWalletIdAsync(Guid walletId);
+        Task<List<Payout>> GetPendingAsync();
     }
 }

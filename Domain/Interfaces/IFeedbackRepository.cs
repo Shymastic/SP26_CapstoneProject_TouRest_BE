@@ -18,6 +18,8 @@ namespace TouRest.Domain.Interfaces
         Task<RatingSummaryDTO> GetRatingSummaryAsync(Guid itineraryId);
         Task<Guid?> GetItineraryAgencyIdByFeedbackId(Guid feedbackId);
         Task<List<Feedback>> GetMyFeedbacksAsync(Guid userId);
+        Task<(double AverageRating, int TotalReviews)> GetRatingStatsByAgencyIdAsync(Guid agencyId);
+
     }
     public class FeedbackSearch
     {

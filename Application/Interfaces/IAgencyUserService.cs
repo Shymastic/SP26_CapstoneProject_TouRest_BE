@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TouRest.Application.DTOs.Agency;
+using TouRest.Domain.DTOs;
 using TouRest.Domain.Enums;
 
 
@@ -18,5 +19,6 @@ namespace TouRest.Application.Interfaces
         Task<List<AgencyUserDTO>> GetTourGuidesAsync(Guid agencyId);
         Task<AgencyUserDTO> CreateGuideAccountAsync(Guid agencyId, CreateGuideRequest request);
         Task<AgencyUserDTO?> GetAgencyUserByUserId(Guid userId);
+        Task<List<AgencyGuideDTO>> GetGuidesAsync(Guid agencyId);
     }
 }

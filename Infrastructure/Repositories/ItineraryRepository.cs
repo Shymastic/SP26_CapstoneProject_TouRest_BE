@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using TouRest.Domain.Entities;
+using TouRest.Domain.Enums;
 using TouRest.Domain.Interfaces;
 using TouRest.Infrastructure.Persistence;
 
@@ -82,6 +83,11 @@ namespace TouRest.Infrastructure.Repositories
             return await _context.Itineraries
                 .Include(x => x.Agency)
                 .FirstOrDefaultAsync(x => x.Id == id);
+        }
+        public async Task<int> CountActiveByAgencyIdAsync(Guid agencyId)
+        {
+            return await _context.Itineraries
+                .CountAsync(i => i.AgencyId == agencyId && i.Status == ItineraryStatus.Active);
         }
     }
 }

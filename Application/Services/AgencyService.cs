@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using TouRest.Application.Common.Helpers;
 using TouRest.Application.Common.Models;
 using TouRest.Application.DTOs.Agency;
+using TouRest.Application.DTOs.Itinerary;
 using TouRest.Application.Interfaces;
 using TouRest.Domain.Entities;
 using TouRest.Domain.Enums;
@@ -21,19 +22,28 @@ namespace TouRest.Application.Services
         private readonly IImageRepository _imageRepository;
         private readonly IStorageService _storageService;
         private readonly IItineraryScheduleRepository _scheduleRepository;
+        private readonly IItineraryRepository _itineraryRepository;
+        private readonly IFeedbackRepository _feedbackRepository;
+        private readonly IAgencyUserRepository _agencyUserRepository;
 
         public AgencyService(
             IAgencyRepository agencyRepository,
             IMapper mapper,
             IImageRepository imageRepository,
             IItineraryScheduleRepository scheduleRepository,
-            IStorageService storageService)
+            IStorageService storageService,
+            IItineraryRepository itineraryRepository,
+            IFeedbackRepository feedbackRepository,
+            IAgencyUserRepository agencyUserRepository)
         {
             _mapper = mapper;
             _agencyRepository = agencyRepository;
             _imageRepository = imageRepository;
             _scheduleRepository = scheduleRepository;
             _storageService = storageService;
+            _itineraryRepository = itineraryRepository;
+            _feedbackRepository = feedbackRepository;
+            _agencyUserRepository = agencyUserRepository;
         }
 
         public async Task<PagedResult<AgencyDTO>> GetAllAsync(int page, int pageSize)
@@ -114,7 +124,13 @@ namespace TouRest.Application.Services
             var agency = await _agencyRepository.GetByIdAsync(id);
             if (agency == null) return null;
 
-            var images = await _imageRepository.GetByTypeAsync(Domain.Enums.ImageType.Agency, id);
+            var images = await _imageRepository.GetByTypeAsync(ImageType.Agency, id);
+            var totalTours = await _itineraryRepository.CountActiveByAgencyIdAsync(id);
+            var (averageRating, totalReviews) = await _feedbackRepository.GetRatingStatsByAgencyIdAsync(id);
+            var tours = await _itineraryRepository.GetByAgencyIdAsync(id);
+            var guides = await _agencyUserRepository.GetGuidesByAgencyIdAsync(id);
+            var totalSchedulesCompleted = await _scheduleRepository.CountCompletedByAgencyIdAsync(id);
+
 
             return new AgencyDetailDTO
             {
@@ -133,6 +149,12 @@ namespace TouRest.Application.Services
                 CreatedAt = agency.CreatedAt,
                 UpdatedAt = agency.UpdatedAt,
                 Images = images.Select(i => i.Url).ToList(),
+                TotalTours = totalTours,
+                TotalSchedulesCompleted = totalSchedulesCompleted,
+                AverageRating = averageRating,
+                TotalReviews = totalReviews,
+                Tours = _mapper.Map<List<ItineraryDTO>>(tours),
+                Guides = guides
             };
         }
         public async Task<AgencyDTO> GetMyAgency(Guid userId)
@@ -167,11 +189,6 @@ namespace TouRest.Application.Services
             existing.Description = update.Description ?? existing.Description;
             var updatedAgency = await _agencyRepository.UpdateAsync(existing);
             return _mapper.Map<AgencyDTO>(updatedAgency);
-        }
-
-        public Task AgencyDashboard(Guid id)
-        {
-            throw new NotImplementedException();
         }
 
     }

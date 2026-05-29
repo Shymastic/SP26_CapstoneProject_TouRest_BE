@@ -1,4 +1,5 @@
 using TouRest.Application.DTOs.Itinerary;
+using TouRest.Domain.Enums;
 
 namespace TouRest.Application.Interfaces
 {
@@ -12,5 +13,6 @@ namespace TouRest.Application.Interfaces
         Task<List<ProviderScheduleDTO>> GetByProviderIdAsync(Guid providerId);
         Task AcceptScheduleAsync(Guid scheduleId, Guid guideId);
         Task RejectScheduleAsync(Guid scheduleId, Guid guideId);
+        Task UpdateStatusAsync(Guid scheduleId, ItineraryScheduleStatus status);
     }
 }

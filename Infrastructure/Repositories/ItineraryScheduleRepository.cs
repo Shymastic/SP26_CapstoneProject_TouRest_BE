@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TouRest.Domain.Entities;
+using TouRest.Domain.Enums;
 using TouRest.Domain.Interfaces;
 using TouRest.Infrastructure.Persistence;
 
@@ -72,6 +73,21 @@ namespace TouRest.Infrastructure.Repositories
                 .OrderBy(s => s.StartTime)
                 .AsNoTracking()
                 .ToListAsync();
+        }
+        public async Task<int> CountCompletedByAgencyIdAsync(Guid agencyId)
+        {
+            return await _context.ItinerarySchedules
+                .Include(s => s.Itinerary)
+                .CountAsync(s => s.Itinerary.AgencyId == agencyId
+                    && s.Status == ItineraryScheduleStatus.Completed);
+        }
+        public async Task<ItinerarySchedule?> GetWithStopsAndActivitiesAsync(Guid scheduleId)
+        {
+            return await _context.ItinerarySchedules
+                .Include(s => s.Itinerary)
+                    .ThenInclude(i => i.Stops)
+                        .ThenInclude(s => s.Activities)
+                .FirstOrDefaultAsync(s => s.Id == scheduleId);
         }
     }
 }

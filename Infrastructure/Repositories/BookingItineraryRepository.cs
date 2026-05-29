@@ -48,6 +48,15 @@ namespace TouRest.Infrastructure.Repositories
                 .OrderByDescending(bi => bi.CreatedAt)
                 .FirstOrDefaultAsync();
         }
+        public async Task<List<BookingItinerary>> GetByScheduleIdAsync(Guid scheduleId)
+        {
+            return await _context.BookingItineraries
+                .Include(bi => bi.ItinerarySchedule)
+                    .ThenInclude(s => s.Itinerary)
+                .Where(bi => bi.ItineraryScheduleId == scheduleId)
+                .AsNoTracking()
+                .ToListAsync();
+        }
     }
 
 }

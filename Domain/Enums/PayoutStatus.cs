@@ -8,9 +8,11 @@ namespace TouRest.Domain.Enums
 {
     public enum PayoutStatus
     {
-        Pending = 0,
-        Approved = 1,
-        Rejected = 2,
-        Completed = 3
+        Pending,     // waiting for admin approval
+        Approved,    // admin approved, calling PayOS
+        Processing,  // PayOS processing bank transfer
+        Completed,   // money sent
+        Rejected,    // admin rejected
+        Failed       // PayOS transfer failed
     }
 }
