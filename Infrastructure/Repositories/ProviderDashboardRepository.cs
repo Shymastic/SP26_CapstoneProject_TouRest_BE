@@ -3,14 +3,15 @@ using TouRest.Domain.DTOs;
 using TouRest.Domain.Entities;
 using TouRest.Domain.Enums;
 using TouRest.Domain.Interfaces;
+using TouRest.Infrastructure.Persistence;
 
 namespace TouRest.Infrastructure.Repositories
 {
     public class ProviderDashboardRepository : IProviderDashboardRepository
     {
-        private readonly DbContext _context;
+        private readonly AppDbContext _context;
 
-        public ProviderDashboardRepository(DbContext context)
+        public ProviderDashboardRepository(AppDbContext context)
         {
             _context = context;
         }

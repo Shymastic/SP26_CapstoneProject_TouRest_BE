@@ -20,7 +20,22 @@ namespace TouRest.Infrastructure.Repositories
         {
             return await _context.Services
                 .AsNoTracking()
+                .Include(x => x.Provider)
                 .Where(s => s.ProviderId == providerId)
+                .ToListAsync();
+        }
+        public override async Task<Service?> GetByIdAsync(Guid id)
+        {
+            return await _context.Services
+                .AsNoTracking()
+                .Include(x => x.Provider)
+                .FirstOrDefaultAsync(s => s.Id == id);
+        }
+        public override async Task<IEnumerable<Service>> GetAllAsync()
+        {
+            return await _context.Services
+                .AsNoTracking()
+                .Include(x => x.Provider)
                 .ToListAsync();
         }
     }

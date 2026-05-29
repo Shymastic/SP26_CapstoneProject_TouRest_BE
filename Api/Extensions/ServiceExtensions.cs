@@ -41,6 +41,8 @@ namespace TouRest.Api.Extensions
             services.AddScoped<IItineraryScheduleRepository, ItineraryScheduleRepository>();
             services.AddScoped<IVehicleRepository, VehicleRepository>();
             services.AddScoped<IAgencyDashboardRepository, AgencyDashboardRepository>();
+            services.AddScoped<IProviderDashboardRepository, ProviderDashboardRepository>();
+            services.AddScoped<IAdminDashboardRepository, AdminDashboardRepository>();
 
 
             //Add services to the DI container, count = 15
@@ -73,6 +75,8 @@ namespace TouRest.Api.Extensions
             services.AddScoped<IVehicleService, VehicleService>();
             services.AddScoped<INotificationService, NotificationService>();
             services.AddScoped<IAgencyDashboardService, AgencyDashboardService>();
+            services.AddScoped<IProviderDashboardService, ProviderDashboardService>();
+            services.AddScoped<IAdminDashboardService, AdminDashboardService>();
             return services;
         }
     }

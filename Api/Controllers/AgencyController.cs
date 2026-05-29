@@ -46,6 +46,7 @@ namespace TouRest.Api.Controllers
         }
 
         [HttpGet("{id:guid}/detail")]
+        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> GetDetail(Guid id)
         {
             var result = await _agencyService.GetDetailByIdAsync(id);
@@ -53,6 +54,14 @@ namespace TouRest.Api.Controllers
                 return NotFound(new { message = "Agency not found." });
             return ApiResponseFactory.Ok(result);
         }
+        //[HttpGet("my-detail")]
+        //[Authorize(Roles = "AGENCY")]
+        //public async Task<IActionResult> GetMyDetail()
+        //{
+        //    var userId = User.GetUserId();
+        //    var result = await _agencyService.GetDetailByIdAsync(userId);
+        //    return ApiResponseFactory.Ok(result);
+        //}
         [HttpGet("user-list")]
         [Authorize(Roles = "ADMIN, AGENCY")]
         public async Task<IActionResult> GetAgencyUsers(Guid agencyId)

@@ -51,4 +51,25 @@ public class WalletController : ControllerBase
         await _walletService.RequestPayoutAsync(userId, request);
         return ApiResponseFactory.Created(new { }, "Payout request submitted");
     }
+    //[HttpPut("add-funds")]
+    //public async Task<IActionResult> AddFunds([FromBody] AddFundsRequestDTO request)
+    //{
+    //    var userId = User.GetUserId();
+    //    await _walletService.AddFundsAsync(userId, request);
+    //    return ApiResponseFactory.Created(new { }, "Add funds request submitted");
+    //}
+    //[HttpPut("withdraw-funds")]
+    //public async Task<IActionResult> WithdrawFunds([FromBody] WithdrawFundsRequestDTO request)
+    //{
+    //    var userId = User.GetUserId();
+    //    await _walletService.WithdrawFundsAsync(userId, request);
+    //    return ApiResponseFactory.Created(new { }, "Withdraw funds request submitted");
+    //}
+    //[HttpPut("add-bank")]
+    //public async Task<IActionResult> AddBank([FromBody] AddBankRequestDTO request)
+    //{
+    //    var userId = User.GetUserId();
+    //    await _walletService.AddBankAsync(userId, request);
+    //    return ApiResponseFactory.Created(new { }, "Bank added successfully");
+    //}
 }

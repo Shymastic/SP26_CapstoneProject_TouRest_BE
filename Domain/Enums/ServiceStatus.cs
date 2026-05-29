@@ -10,6 +10,8 @@ namespace TouRest.Domain.Enums
     {
         Inactive = 0,
         Active = 1,
-        Discontinued = 2
+        Discontinued = 2,
+        Removed = 3,
+        Draft = 4
     }
 }

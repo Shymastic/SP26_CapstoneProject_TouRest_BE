@@ -15,7 +15,7 @@ namespace TouRest.Application.Mappings
         {
 
             CreateMap<Agency, AgencyDTO>()
-                .ForMember(dest =>dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
             CreateMap<AgencyCreateRequestDTO, Agency>()
                 .ForMember(dest => dest.StartTime, opt => opt.Ignore())
                 .ForMember(dest => dest.EndTime, opt => opt.Ignore())
@@ -30,6 +30,18 @@ namespace TouRest.Application.Mappings
                 .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User.Email))
                 .ForMember(dest => dest.AgencyName, opt => opt.MapFrom(src => src.Agency.Name))
                 .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role.ToString()));
+
+            CreateMap<AgencyUser, AgencyUserListItemDTO>()
+                .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId))
+                .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role.ToString()))
+                .ForMember(dest => dest.UserFullName, opt => opt.MapFrom(src => src.User != null ? src.User.FullName : null))
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User != null ? src.User.Email : null));
+
+
+            CreateMap<Agency, AgencyWithUsersDTO>()
+                .ForMember(dest => dest.AgencyId, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.AgencyName, opt => opt.MapFrom(src => src.Name))
+                .ForMember(dest => dest.Users, opt => opt.MapFrom(src => src.AgencyUsers));
 
 
         }
