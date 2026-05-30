@@ -144,6 +144,21 @@ namespace TouRest.Api.Controllers
             var result = await _dashboardService.GetPendingRequestsAsync(userId);
             return ApiResponseFactory.Ok(result);
         }
+
+        [HttpGet("dashboard/active-packages")]
+        public async Task<IActionResult> GetActivePackages([FromQuery] Guid providerId)
+        {
+            var result = await _dashboardService.GetActivePackagesAsync(providerId);
+            return ApiResponseFactory.Ok(result);
+        }
+
+        [HttpGet("dashboard/top-agencies")]
+        public async Task<IActionResult> GetTopAgencies([FromQuery] Guid providerId)
+        {
+            var result = await _dashboardService.GetTopAgenciesAsync(providerId);
+            return ApiResponseFactory.Ok(result);
+        }
+
         [HttpGet("jobs/schedules")]
         [Authorize(Roles = "PROVIDER")]
         public async Task<IActionResult> GetJobSchedules()
