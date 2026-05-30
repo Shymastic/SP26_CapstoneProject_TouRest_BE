@@ -34,8 +34,20 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("http://localhost:3000")
-              .AllowAnyHeader()
+        var appUrl = Environment.GetEnvironmentVariable("APP_URL");
+
+        if (!string.IsNullOrEmpty(appUrl))
+        {
+            
+            var origins = appUrl.Split(',', StringSplitOptions.RemoveEmptyEntries);
+            policy.WithOrigins(origins);
+        }
+        else
+        {
+            policy.WithOrigins("http://localhost:3000");
+        }
+
+        policy.AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
     });
