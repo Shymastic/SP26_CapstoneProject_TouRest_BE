@@ -123,18 +123,28 @@ namespace TouRest.Application.Services
         public async Task<List<ProviderScheduleDTO>> GetByProviderIdAsync(Guid providerId)
         {
             var list = await _repo.GetByProviderIdAsync(providerId);
-            return list.Select(s => new ProviderScheduleDTO
+            return list.Select(s =>
             {
-                Id            = s.Id,
-                ItineraryId   = s.ItineraryId,
-                ItineraryName = s.Itinerary?.Name ?? string.Empty,
-                AgencyName    = s.Itinerary?.Agency?.Name ?? string.Empty,
-                StartTime     = s.StartTime,
-                EndTime       = s.EndTime,
-                Spot          = s.Spot,
-                SpotLeft      = s.SpotLeft,
-                GuideId       = s.GuideId,
-                GuideName     = s.Guide != null ? (s.Guide.FullName ?? s.Guide.Username) : null,
+                var firstActivity = s.Itinerary?.Stops
+                    .Where(st => st.ProviderId == providerId)
+                    .SelectMany(st => st.Activities)
+                    .OrderBy(a => a.StartTime)
+                    .FirstOrDefault();
+
+                return new ProviderScheduleDTO
+                {
+                    Id                = s.Id,
+                    ItineraryId       = s.ItineraryId,
+                    ItineraryName     = s.Itinerary?.Name ?? string.Empty,
+                    AgencyName        = s.Itinerary?.Agency?.Name ?? string.Empty,
+                    StartTime         = s.StartTime,
+                    EndTime           = s.EndTime,
+                    Spot              = s.Spot,
+                    SpotLeft          = s.SpotLeft,
+                    GuideId           = s.GuideId,
+                    GuideName         = s.Guide != null ? (s.Guide.FullName ?? s.Guide.Username) : null,
+                    FirstActivityTime = firstActivity?.StartTime,
+                };
             }).ToList();
         }
 

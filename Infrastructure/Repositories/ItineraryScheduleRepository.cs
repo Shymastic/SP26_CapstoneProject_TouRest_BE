@@ -68,6 +68,8 @@ namespace TouRest.Infrastructure.Repositories
         {
             return await _context.ItinerarySchedules
                 .Include(s => s.Itinerary).ThenInclude(i => i.Agency)
+                .Include(s => s.Itinerary).ThenInclude(i => i.Stops.Where(st => st.ProviderId == providerId))
+                    .ThenInclude(st => st.Activities)
                 .Include(s => s.Guide)
                 .Where(s => s.Itinerary.Stops.Any(stop => stop.ProviderId == providerId))
                 .OrderBy(s => s.StartTime)

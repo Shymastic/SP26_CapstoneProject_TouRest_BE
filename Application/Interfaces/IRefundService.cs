@@ -13,5 +13,6 @@ namespace TouRest.Application.Interfaces
         Task<RefundDTO> ReviewRefundAsync(Guid refundId, RefundReviewDTO review);
         Task<RefundDTO> CompleteRefundAsync(Guid refundId);
         Task<RefundDTO> GetRefundByBookingAsync(Guid bookingId);
+        Task<CancelBookingResultDTO> CancelAndRefundAsync(Guid bookingId, Guid userId, string? reason);
     }
 }

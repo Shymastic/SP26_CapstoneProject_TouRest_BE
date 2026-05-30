@@ -14,11 +14,13 @@ namespace TouRest.Api.Controllers
     {
         private readonly IBookingService _bookingService;
         private readonly IProviderStaffService _staffService;
+        private readonly IRefundService _refundService;
 
-        public BookingController(IBookingService bookingService, IProviderStaffService staffService)
+        public BookingController(IBookingService bookingService, IProviderStaffService staffService, IRefundService refundService)
         {
             _bookingService = bookingService;
             _staffService   = staffService;
+            _refundService  = refundService;
         }
 
         [HttpGet("{id:guid}")]
@@ -60,6 +62,15 @@ namespace TouRest.Api.Controllers
         public async Task<IActionResult> GetStopMedicalResults(Guid bookingId, Guid stopId)
         {
             var result = await _staffService.GetBookingStopResultsAsync(bookingId, stopId);
+            return ApiResponseFactory.Ok(result);
+        }
+
+        [HttpPost("{id:guid}/cancel")]
+        [Authorize(Roles = "CUSTOMER")]
+        public async Task<IActionResult> CancelBooking(Guid id, [FromBody] string? reason = null)
+        {
+            var userId = User.GetUserId();
+            var result = await _refundService.CancelAndRefundAsync(id, userId, reason);
             return ApiResponseFactory.Ok(result);
         }
 
