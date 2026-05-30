@@ -44,6 +44,7 @@ namespace TouRest.Api.Extensions
             services.AddScoped<IVehicleRepository, VehicleRepository>();
             services.AddScoped<IAgencyDashboardRepository, AgencyDashboardRepository>();
             services.AddScoped<IProviderDashboardRepository, ProviderDashboardRepository>();
+            services.AddScoped<IAdminDashboardRepository, AdminDashboardRepository>();
             services.AddScoped<IItineraryTrackingRepository, ItineraryTrackingRepository>();
             services.AddScoped<IProviderStaffRepository, ProviderStaffRepository>();
 
@@ -78,9 +79,6 @@ namespace TouRest.Api.Extensions
             services.AddScoped<IVehicleService, VehicleService>();
             services.AddScoped<INotificationService, NotificationService>();
             services.AddScoped<IAgencyDashboardService, AgencyDashboardService>();
-            services.AddScoped<IProviderDashboardService, ProviderDashboardService>();
-            services.AddScoped<IItineraryTrackingService, ItineraryTrackingService>();
-            services.AddScoped<IProviderStaffService, ProviderStaffService>();
             return services;
         }
     }

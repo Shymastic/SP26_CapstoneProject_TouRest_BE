@@ -26,8 +26,6 @@ namespace TouRest.Domain.Entities
         public int DurationDays { get; set; }
         [Required]
         public int MaxCapacity { get; set; }
-        [Required]
-        public int SpotLeft { get; set; }
 
         [Required]
         public ItineraryStatus Status { get; set; }

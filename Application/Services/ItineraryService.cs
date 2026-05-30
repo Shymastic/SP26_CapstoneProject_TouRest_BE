@@ -46,7 +46,6 @@ namespace TouRest.Application.Services
             var itinerary = _mapper.Map<Itinerary>(create);
             itinerary.AgencyId = agencyId;
             itinerary.Status = ItineraryStatus.Draft; 
-            itinerary.SpotLeft = create.MaxCapacity;  
             itinerary.CreatedAt = DateTime.UtcNow;
             itinerary.UpdatedAt = DateTime.UtcNow;
 

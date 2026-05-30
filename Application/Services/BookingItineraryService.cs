@@ -55,8 +55,8 @@ namespace TouRest.Application.Services
                 throw new KeyNotFoundException("Schedule not found");
 
             var itinerary = schedule.Itinerary;
-            if (itinerary.SpotLeft < create.NumberOfGuests)
-                throw new InvalidOperationException($"Only {itinerary.SpotLeft} spots available");           
+            if (schedule.SpotLeft < create.NumberOfGuests)
+                throw new InvalidOperationException($"Only {schedule.SpotLeft} spots available");           
             var price = itinerary.Price * create.NumberOfGuests;
             var bookingItinerary = new BookingItinerary
             {
@@ -70,9 +70,9 @@ namespace TouRest.Application.Services
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
-            itinerary.SpotLeft -= create.NumberOfGuests;
-            itinerary.UpdatedAt = DateTime.UtcNow;
-            await _itineraryRepository.UpdateAsync(itinerary);
+            schedule.SpotLeft -= create.NumberOfGuests;
+            schedule.UpdatedAt = DateTime.UtcNow;
+            await _itineraryScheduleRepository.UpdateAsync(schedule);
 
             booking.TotalAmount += price;
             booking.UpdatedAt = DateTime.UtcNow;
@@ -96,13 +96,13 @@ namespace TouRest.Application.Services
             if (update.NumberOfGuests != null)
             {
                 var difference = update.NumberOfGuests.Value - bookingItinerary.NumberOfGuests;
-                var itinerary = bookingItinerary.ItinerarySchedule.Itinerary;
+                var schedule = bookingItinerary.ItinerarySchedule;
 
-                if (itinerary.SpotLeft < difference)
+                if (schedule.SpotLeft < difference)
                     throw new InvalidOperationException("Not enough spots available");
 
-                itinerary.SpotLeft -= difference;
-                await _itineraryRepository.UpdateAsync(itinerary);
+                schedule.SpotLeft -= difference;
+                await _itineraryScheduleRepository.UpdateAsync(schedule);   
                 bookingItinerary.NumberOfGuests = update.NumberOfGuests.Value;
             }
             if (update.VoucherId != null)

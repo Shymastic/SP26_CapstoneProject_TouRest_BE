@@ -228,7 +228,7 @@ namespace TouRest.Api.Controllers
             await _adminService.DeleteFeedback(id);
             return ApiResponseFactory.NoContent("Feedback deleted");
         }
-
+        //Dashboard
         [HttpGet("stats")]
         public async Task<IActionResult> GetStats()
         {
@@ -247,11 +247,12 @@ namespace TouRest.Api.Controllers
             return ApiResponseFactory.Ok(await _dashboardService.GetPendingApprovalsAsync());
         }
 
-        [HttpGet("agencies")]
+        [HttpGet("top-agencies")]
         public async Task<IActionResult> GetTopAgencies([FromQuery] int limit = 5)
         {
             return ApiResponseFactory.Ok(await _dashboardService.GetTopAgenciesAsync(limit));
         }
+        //payouts page
         [HttpGet("payouts")]
         public async Task<IActionResult> GetPendingPayouts()
         {

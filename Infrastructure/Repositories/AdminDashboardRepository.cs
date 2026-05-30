@@ -3,14 +3,15 @@ using TouRest.Domain.DTOs;
 using TouRest.Domain.Entities;
 using TouRest.Domain.Enums;
 using TouRest.Domain.Interfaces;
+using TouRest.Infrastructure.Persistence;
 
 namespace TouRest.Infrastructure.Repositories
 {
     public class AdminDashboardRepository : IAdminDashboardRepository
     {
-        private readonly DbContext _context;
+        private readonly AppDbContext _context;
 
-        public AdminDashboardRepository(DbContext context)
+        public AdminDashboardRepository(AppDbContext context)
         {
             _context = context;
         }

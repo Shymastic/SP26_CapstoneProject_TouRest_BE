@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using TouRest.Api.Common;
+using TouRest.Api.Extensions;
 using TouRest.Application.DTOs.Service;
 using TouRest.Application.Interfaces;
 
@@ -8,6 +10,8 @@ namespace TouRest.Api.Controllers
 {
     [Route("api/services")]
     [ApiController]
+    
+    
     public class ServiceController : ControllerBase
     {
         private readonly ILogger<ServiceController> _logger;
@@ -18,6 +22,7 @@ namespace TouRest.Api.Controllers
             _serviceService = serviceService;
         }
         [HttpGet("provider/{providerId:guid}")]
+        [Authorize]
         public async Task<IActionResult> GetServicesByProvider(Guid providerId)
         {
             var services = await _serviceService.GetServicesByProviderId(providerId);
@@ -25,6 +30,7 @@ namespace TouRest.Api.Controllers
         }
 
         [HttpGet("{id:guid}")]
+        [Authorize]
         public async Task<IActionResult> GetServiceById(Guid id)
         {
             var service = await _serviceService.GetServiceById(id);
@@ -33,24 +39,36 @@ namespace TouRest.Api.Controllers
             return ApiResponseFactory.Ok(service);
         }
         [HttpGet]
+        [Authorize]
         public async Task<IActionResult> GetServices()
         {
             var services = await _serviceService.GetAllServices();
             return ApiResponseFactory.Ok(services);
         }
+        [HttpGet("provider/my")]
+        [Authorize(Roles = "PROVIDER")]
+        public async Task<IActionResult> GetMyServices()
+        {
+            var userId = User.GetUserId();
+            var services = await _serviceService.GetMyProviderServices(userId);
+            return ApiResponseFactory.Ok(services);
+        }
         [HttpPut("{id:guid}")]
+        [Authorize(Roles = "PROVIDER, ADMIN")]
         public async Task<IActionResult> UpdateService([FromRoute] Guid id, [FromBody] ServiceUpdateRequest update)
         {
             var result = await _serviceService.UpdateService(id, update);
             return ApiResponseFactory.Ok(result, "Service updated");
         }
         [HttpPost]
+        [Authorize(Roles = "PROVIDER")]
         public async Task<IActionResult> AddService([FromBody] ServiceCreateRequest create)
         {
             var result = await _serviceService.CreateService(create);
             return ApiResponseFactory.Created(result, "Service created");
         }
         [HttpDelete("{id:guid}")]
+        [Authorize(Roles = "PROVIDER, ADMIN")]
         public async Task<IActionResult> DeleteService(Guid id)
         {
             var result = await _serviceService.DeleteService(id);

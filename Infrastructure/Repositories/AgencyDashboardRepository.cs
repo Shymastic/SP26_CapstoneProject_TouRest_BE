@@ -103,7 +103,7 @@ namespace TouRest.Infrastructure.Repositories
                     ItineraryName = s.Itinerary.Name,
                     StartTime = s.StartTime,
                     TourGuideName = s.Guide != null ? s.Guide.FullName : null,
-                    Pax = s.Itinerary.MaxCapacity - s.Itinerary.SpotLeft,
+                    Pax = s.Itinerary.MaxCapacity - s.SpotLeft,
                 })
                 .ToListAsync();
         }

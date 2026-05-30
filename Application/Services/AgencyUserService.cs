@@ -67,11 +67,17 @@ namespace TouRest.Application.Services
             await _agencyUserRepository.RemoveUserFromAgencyAsync(agencyId, userId);
 
         }
-        public async Task<List<AgencyUserDTO>> GetAgencyUsers(Guid agencyId)
+        public async Task<AgencyWithUsersDTO> GetAgencyUsers(Guid agencyId)
         {
             if (agencyId == Guid.Empty)
                 throw new ArgumentException("AgencyId cannot be empty", nameof(agencyId));
-            return _mapper.Map<List<AgencyUserDTO>>(await _agencyUserRepository.GetAgencyUsers(agencyId));
+
+            var agency = await _agencyRepository.GetByIdAsync(agencyId);
+
+            if (agency == null)
+                throw new KeyNotFoundException($"Agency with ID '{agencyId}' not found.");
+
+            return _mapper.Map<AgencyWithUsersDTO>(agency);
         }
 
         public async Task<AgencyUserDTO?> GetAgencyUserByUserId(Guid userId)

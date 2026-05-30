@@ -26,8 +26,9 @@ namespace TouRest.Infrastructure.Repositories
 
         public async Task<ProviderUser?> GetByUserIdAsync(Guid userId)
         {
-            return await _context.ProviderUsers
+            return await _context.ProviderUsers.Include(x=>x.Provider).Include(x=>x.User)
                 .FirstOrDefaultAsync(pu => pu.UserId == userId);
         }
+        
     }
 }

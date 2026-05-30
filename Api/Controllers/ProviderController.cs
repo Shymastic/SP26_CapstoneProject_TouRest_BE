@@ -46,17 +46,17 @@ namespace TouRest.Api.Controllers
         }
 
         [HttpGet("me")]
+        [Authorize(Roles = "PROVIDER")]
         [Authorize]
         public async Task<IActionResult> GetMe()
         {
             var userId = User.GetUserId();
             var result = await _providerService.GetByUserIdAsync(userId);
-            if (result == null)
-                return NotFound(new { message = "Provider not found." });
             return ApiResponseFactory.Ok(result);
         }
 
         [HttpGet("{id:guid}")]
+        [Authorize(Roles = "PROVIDER, ADMIN")]
         public async Task<IActionResult> GetById(Guid id)
         {
             var result = await _providerService.GetByIdAsync(id);
@@ -66,6 +66,7 @@ namespace TouRest.Api.Controllers
         }
 
         [HttpGet("{id:guid}/detail")]
+        [Authorize(Roles = "PROVIDER, ADMIN")]
         public async Task<IActionResult> GetDetail(Guid id)
         {
             var result = await _providerService.GetDetailByIdAsync(id);
@@ -75,7 +76,7 @@ namespace TouRest.Api.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "CUSTOMER")]
+        [Authorize(Roles = "PROVIDER")]
         public async Task<IActionResult> Create([FromForm] CreateProviderRequest request)
         {
             var userId = User.GetUserId();
@@ -93,7 +94,7 @@ namespace TouRest.Api.Controllers
                 return NotFound(new { message = "Provider not found." });
             }
 
-            return Ok(result);
+            return ApiResponseFactory.Ok(result);
         }
 
         [HttpPost("register-request")]
@@ -106,24 +107,41 @@ namespace TouRest.Api.Controllers
 
             return ApiResponseFactory.Created(new { }, "Provider request registered successfully");
         }
-        [HttpGet("dashboard/stats")]
-        public async Task<IActionResult> GetStats([FromQuery] Guid providerId)
+        //[HttpGet("dashboard/stats")]
+        //public async Task<IActionResult> GetStats([FromQuery] Guid providerId)
+        //{
+        //    var result = await _dashboardService.GetStatsAsync(providerId);
+        //    return Ok(result);
+        //}
+        [HttpGet("dashboard/my-stats")]
+        [Authorize(Roles = "PROVIDER")]
+        public async Task<IActionResult> GetMyStats()
         {
-            var result = await _dashboardService.GetStatsAsync(providerId);
+            var userId = User.GetUserId();
+            var result = await _dashboardService.GetStatsAsync(userId);
             return Ok(result);
         }
 
         [HttpGet("jobs/trend")]
+        [Authorize(Roles = "PROVIDER")]
         public async Task<IActionResult> GetJobsTrend([FromQuery] Guid providerId, [FromQuery] int year = 2026)
         {
             var result = await _dashboardService.GetJobTrendAsync(providerId, year);
             return ApiResponseFactory.Ok(result);
         }
 
-        [HttpGet("requests/pending")]
-        public async Task<IActionResult> GetPendingRequests([FromQuery] Guid providerId)
+        //[HttpGet("requests/pending")]
+        //public async Task<IActionResult> GetPendingRequests([FromQuery] Guid providerId)
+        //{
+        //    var result = await _dashboardService.GetPendingRequestsAsync(providerId);
+        //    return ApiResponseFactory.Ok(result);
+        //}
+        [HttpGet("requests/my-pending")]
+        [Authorize(Roles = "PROVIDER")]
+        public async Task<IActionResult> GetMyPendingRequests()
         {
-            var result = await _dashboardService.GetPendingRequestsAsync(providerId);
+            var userId = User.GetUserId();
+            var result = await _dashboardService.GetPendingRequestsAsync(userId);
             return ApiResponseFactory.Ok(result);
         }
 
@@ -140,7 +158,6 @@ namespace TouRest.Api.Controllers
             var result = await _dashboardService.GetTopAgenciesAsync(providerId);
             return ApiResponseFactory.Ok(result);
         }
-
         [HttpGet("jobs/schedules")]
         [Authorize(Roles = "PROVIDER")]
         public async Task<IActionResult> GetJobSchedules()

@@ -42,6 +42,13 @@ namespace TouRest.Infrastructure.Repositories
         {
             return await _context.Agencies.Include(x=>x.User).AsNoTracking().FirstOrDefaultAsync(x=>x.Id == agencyId);
         }
+        public override async Task<Agency?> GetByIdAsync(Guid id)
+        {
+            return await _context.Agencies.AsNoTracking().
+                Include(x => x.AgencyUsers).
+                ThenInclude(au => au.User).
+                FirstOrDefaultAsync(a => a.Id == id);
+        }
 
     }
 }
