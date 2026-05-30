@@ -28,6 +28,7 @@ namespace TouRest.Infrastructure.Repositories
             return await _context.ItineraryStops
                 .Where(s => s.ItineraryId == itineraryId)
                 .Include(s => s.Vehicle)
+                .Include(s => s.Provider)
                 .Include(s => s.Activities.OrderBy(a => a.ActivityOrder))
                     .ThenInclude(a => a.Service)
                 .OrderBy(s => s.StopOrder)

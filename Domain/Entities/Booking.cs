@@ -36,5 +36,6 @@ namespace TouRest.Domain.Entities
         public User User { get; set; } = null!;
         public ICollection<BookingItinerary> BookingItineraries { get; set; } = [];
         public ICollection<Payment> Payments { get; set; } = [];
+        public ICollection<BookingPassenger> Passengers { get; set; } = [];
     }
 }

@@ -47,7 +47,7 @@ namespace TouRest.Application.Services
             if (agencyUser != null)
             {
                 var wallet = await _walletRepository.GetByAgencyIdAsync(agencyUser.AgencyId)
-                    ?? throw new KeyNotFoundException("Wallet not found for this agency");
+                    ?? await CreateWalletAsync(agencyId: agencyUser.AgencyId);
                 return (wallet, "Agency");
             }
 
@@ -56,14 +56,29 @@ namespace TouRest.Application.Services
             if (providerUser != null)
             {
                 var wallet = await _walletRepository.GetByProviderIdAsync(providerUser.ProviderId)
-                    ?? throw new KeyNotFoundException("Wallet not found for this provider");
+                    ?? await CreateWalletAsync(providerId: providerUser.ProviderId);
                 return (wallet, "Provider");
             }
 
-            // Fall back to user wallet
+            // Fall back to user wallet (customer)
             var userWallet = await _walletRepository.GetByUserIdAsync(userId)
-                ?? throw new KeyNotFoundException("Wallet not found");
+                ?? await CreateWalletAsync(userId: userId);
             return (userWallet, "User");
+        }
+
+        private async Task<Wallet> CreateWalletAsync(Guid? userId = null, Guid? agencyId = null, Guid? providerId = null)
+        {
+            var wallet = new Wallet
+            {
+                Id             = Guid.NewGuid(),
+                UserId         = userId,
+                AgencyId       = agencyId,
+                ProviderId     = providerId,
+                Balance        = 0,
+                PendingBalance = 0,
+                CreatedAt      = DateTime.UtcNow,
+            };
+            return await _walletRepository.CreateAsync(wallet);
         }
 
         public async Task<WalletDTO> GetWalletAsync(Guid userId)

@@ -15,5 +15,7 @@ namespace TouRest.Application.DTOs.Booking
 
         [MaxLength(500)]
         public string? CustomerNote { get; set; }
+
+        public List<PassengerRequest> Passengers { get; set; } = [];
     }
 }

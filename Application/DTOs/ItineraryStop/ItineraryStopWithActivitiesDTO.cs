@@ -25,8 +25,10 @@ namespace TouRest.Application.DTOs.ItineraryStop
         public double Latitude { get; set; }
         public double Longitude { get; set; }
         public Guid? ProviderId { get; set; }
-        public Guid VehicleId { get; set; }
+        public string? ProviderName { get; set; }
+        public Guid? VehicleId { get; set; }
         public string? VehicleName { get; set; }
+        public string? VehicleType { get; set; }
         public List<StopActivityDTO> Activities { get; set; } = [];
     }
 }

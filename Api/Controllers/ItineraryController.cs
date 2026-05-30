@@ -222,6 +222,9 @@ namespace TouRest.Api.Controllers
                 Latitude = s.Latitude,
                 Longitude = s.Longitude,
                 ProviderId = s.ProviderId,
+                ProviderName = s.Provider?.Name,
+                VehicleName = s.Vehicle?.Name,
+                VehicleType = s.Vehicle?.Type.ToString(),
                 Activities = s.Activities.Select(a => new StopActivityDTO
                 {
                     Id = a.Id,

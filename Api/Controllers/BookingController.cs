@@ -13,10 +13,14 @@ namespace TouRest.Api.Controllers
     public class BookingController : ControllerBase
     {
         private readonly IBookingService _bookingService;
+        private readonly IProviderStaffService _staffService;
+        private readonly IRefundService _refundService;
 
-        public BookingController(IBookingService bookingService)
+        public BookingController(IBookingService bookingService, IProviderStaffService staffService, IRefundService refundService)
         {
             _bookingService = bookingService;
+            _staffService   = staffService;
+            _refundService  = refundService;
         }
 
         [HttpGet("{id:guid}")]
@@ -29,10 +33,10 @@ namespace TouRest.Api.Controllers
         }
         [HttpGet("me")]
         [Authorize(Roles = "CUSTOMER")]
-        public async Task<IActionResult> GetMyBookings()
+        public async Task<IActionResult> GetMyBookings([FromQuery] string? status = null)
         {
             var userId = User.GetUserId();
-            var result = await _bookingService.GetBookingsByUserIdAsync(userId);
+            var result = await _bookingService.GetBookingsByUserIdAsync(userId, status);
             return ApiResponseFactory.Ok(result);
         }
         [HttpPost]
@@ -53,6 +57,23 @@ namespace TouRest.Api.Controllers
             var booking = await _bookingService.UpdateBookingAsync(id, userId, isAdmin, update);
             return ApiResponseFactory.Ok(booking);
         }
+        [HttpGet("{bookingId:guid}/stops/{stopId:guid}/medical-results")]
+        [Authorize(Roles = "CUSTOMER, ADMIN")]
+        public async Task<IActionResult> GetStopMedicalResults(Guid bookingId, Guid stopId)
+        {
+            var result = await _staffService.GetBookingStopResultsAsync(bookingId, stopId);
+            return ApiResponseFactory.Ok(result);
+        }
+
+        [HttpPost("{id:guid}/cancel")]
+        [Authorize(Roles = "CUSTOMER")]
+        public async Task<IActionResult> CancelBooking(Guid id, [FromBody] string? reason = null)
+        {
+            var userId = User.GetUserId();
+            var result = await _refundService.CancelAndRefundAsync(id, userId, reason);
+            return ApiResponseFactory.Ok(result);
+        }
+
          [HttpDelete("{id:guid}")]
         [Authorize(Roles = "ADMIN, CUSTOMER")]
          public async Task<IActionResult> DeleteBooking(Guid id)

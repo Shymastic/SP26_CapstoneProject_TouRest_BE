@@ -74,6 +74,8 @@ namespace TouRest.Api.Middlewares
             int statusCode,
             string message)
         {
+            if (context.Response.HasStarted) return;
+
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = statusCode;
 

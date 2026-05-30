@@ -9,17 +9,14 @@ namespace TouRest.Application.Common.Helpers
 {
     public static class ItineraryStatusTransitions
     {
-        private static readonly Dictionary<ItineraryStatus, ItineraryStatus[]> AllowedTransitions =
-            new()
-            {
-            { ItineraryStatus.Draft, new [] { ItineraryStatus.Active } },
-            { ItineraryStatus.Active, new [] { ItineraryStatus.Inactive } },
-            { ItineraryStatus.Inactive, Array.Empty<ItineraryStatus>() }
-            };
+        private static readonly Dictionary<ItineraryStatus, ItineraryStatus[]> AllowedTransitions = new()
+        {
+            { ItineraryStatus.Draft,    new[] { ItineraryStatus.Active                            } },
+            { ItineraryStatus.Active,   new[] { ItineraryStatus.Inactive, ItineraryStatus.Draft   } },
+            { ItineraryStatus.Inactive, Array.Empty<ItineraryStatus>()                              },
+        };
 
         public static bool CanTransition(ItineraryStatus current, ItineraryStatus next)
-        {
-            return AllowedTransitions[current].Contains(next);
-        }
+            => AllowedTransitions.TryGetValue(current, out var allowed) && allowed.Contains(next);
     }
 }

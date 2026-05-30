@@ -148,5 +148,98 @@ namespace TouRest.Infrastructure.Repositories
                 })
                 .ToListAsync();
         }
+
+        public async Task<List<ActivePackageDto>> GetActivePackagesAsync(Guid providerId)
+        {
+            // Packages that contain at least one service from this provider
+            var packages = await _context.Set<Package>()
+                .Where(p => p.Status == PackageStatus.Active &&
+                            p.PackageServices.Any(ps => ps.Service.ProviderId == providerId))
+                .Select(p => new
+                {
+                    p.Id,
+                    p.Name,
+                    ServicesCount = p.PackageServices.Count(ps => ps.Service.ProviderId == providerId),
+                })
+                .ToListAsync();
+
+            var result = new List<ActivePackageDto>();
+
+            foreach (var pkg in packages)
+            {
+                var pkgServiceIds = await _context.Set<PackageService>()
+                    .Where(ps => ps.PackageId == pkg.Id)
+                    .Select(ps => ps.ServiceId)
+                    .ToListAsync();
+
+                var agenciesCount = await _context.Set<Itinerary>()
+                    .Where(i => i.Stops.Any(s => s.Activities.Any(a =>
+                        a.ServiceId != null &&
+                        a.Service!.ProviderId == providerId &&
+                        pkgServiceIds.Contains(a.ServiceId.Value))))
+                    .Select(i => i.AgencyId)
+                    .Distinct()
+                    .CountAsync();
+
+                var revenue = await _context.Set<BookingItinerary>()
+                    .Where(bi => bi.Status == BookingItineraryStatus.Completed &&
+                                 bi.ItinerarySchedule.Itinerary.Stops
+                                    .Any(s => s.Activities.Any(a =>
+                                        a.ServiceId != null &&
+                                        a.Service!.ProviderId == providerId &&
+                                        pkgServiceIds.Contains(a.ServiceId.Value))))
+                    .SumAsync(bi => (long?)bi.FinalPrice) ?? 0;
+
+                var scheduleStats = await _context.Set<ItinerarySchedule>()
+                    .Where(s => s.Itinerary.Stops.Any(st => st.Activities.Any(a =>
+                        a.ServiceId != null &&
+                        a.Service!.ProviderId == providerId &&
+                        pkgServiceIds.Contains(a.ServiceId.Value))))
+                    .Select(s => new { s.Spot, s.SpotLeft })
+                    .ToListAsync();
+
+                int demandPct = 0;
+                var totalSpot = scheduleStats.Sum(s => s.Spot);
+                if (totalSpot > 0)
+                    demandPct = (int)((double)scheduleStats.Sum(s => s.Spot - s.SpotLeft) / totalSpot * 100);
+
+                result.Add(new ActivePackageDto
+                {
+                    PackageId    = pkg.Id,
+                    Name         = pkg.Name,
+                    ServicesCount = pkg.ServicesCount,
+                    AgenciesCount = agenciesCount,
+                    Revenue      = revenue,
+                    DemandPercent = demandPct,
+                });
+            }
+
+            return result.OrderByDescending(p => p.Revenue).ToList();
+        }
+
+        public async Task<List<ProviderTopAgencyDto>> GetTopAgenciesAsync(Guid providerId)
+        {
+            var firstDayThisMonth = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1);
+
+            return await _context.Set<BookingItinerary>()
+                .Where(bi => bi.ItinerarySchedule.StartTime >= firstDayThisMonth &&
+                             bi.ItinerarySchedule.Itinerary.Stops
+                                .Any(s => s.Activities.Any(a => a.Service!.ProviderId == providerId)))
+                .GroupBy(bi => new
+                {
+                    AgencyId = bi.ItinerarySchedule.Itinerary.AgencyId,
+                    AgencyName = bi.ItinerarySchedule.Itinerary.Agency.Name,
+                })
+                .Select(g => new ProviderTopAgencyDto
+                {
+                    AgencyId       = g.Key.AgencyId,
+                    Name           = g.Key.AgencyName,
+                    JobsThisMonth  = g.Count(),
+                    RevenueThisMonth = g.Sum(bi => bi.FinalPrice),
+                })
+                .OrderByDescending(a => a.RevenueThisMonth)
+                .Take(5)
+                .ToListAsync();
+        }
     }
 }

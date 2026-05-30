@@ -19,6 +19,7 @@ namespace TouRest.Application.Services
     {
         private readonly IPaymentRepository _paymentRepository;
         private readonly IBookingRepository _bookingRepository;
+        private readonly IBookingItineraryRepository _bookingItineraryRepository;
         private readonly INotificationRepository _notificationRepository;
         private readonly IWalletRepository _walletRepository;
         private readonly IWalletTransactionRepository _walletTransactionRepository;
@@ -28,6 +29,7 @@ namespace TouRest.Application.Services
         public PaymentService(
             IPaymentRepository paymentRepository,
             IBookingRepository bookingRepository,
+            IBookingItineraryRepository bookingItineraryRepository,
             INotificationRepository notificationRepository,
             IWalletRepository walletRepository,
             IWalletTransactionRepository walletTransactionRepository,
@@ -36,6 +38,7 @@ namespace TouRest.Application.Services
         {
             _paymentRepository = paymentRepository;
             _bookingRepository = bookingRepository;
+            _bookingItineraryRepository = bookingItineraryRepository;
             _notificationRepository = notificationRepository;
             _walletRepository = walletRepository;
             _walletTransactionRepository = walletTransactionRepository;
@@ -121,13 +124,23 @@ namespace TouRest.Application.Services
                 payment.UpdatedAt = DateTime.UtcNow;
                 await _paymentRepository.UpdateAsync(payment);
 
-                // Confirm booking
+                // Confirm booking + update payment status
                 var booking = await _bookingRepository.GetByIdAsync(payment.BookingId);
                 if (booking != null)
                 {
-                    booking.Status = BookingStatus.Confirmed;
-                    booking.UpdatedAt = DateTime.UtcNow;
+                    booking.Status        = BookingStatus.Confirmed;
+                    booking.PaymentStatus = PaymentStatus.Paid;
+                    booking.UpdatedAt     = DateTime.UtcNow;
                     await _bookingRepository.UpdateAsync(booking);
+
+                    // Confirm all itinerary lines for this booking
+                    var lines = await _bookingItineraryRepository.GetBookingItinerariesByBookingId(payment.BookingId);
+                    foreach (var line in lines)
+                    {
+                        line.Status    = BookingItineraryStatus.Confirmed;
+                        line.UpdatedAt = DateTime.UtcNow;
+                        await _bookingItineraryRepository.UpdateAsync(line);
+                    }
 
                     await _notificationRepository.CreateAsync(new Notification
                     {
@@ -181,7 +194,7 @@ namespace TouRest.Application.Services
             }
             else // failed or cancelled
             {
-                payment.Status = PaymentStatus.Failed;
+                payment.Status    = PaymentStatus.Failed;
                 payment.UpdatedAt = DateTime.UtcNow;
                 await _paymentRepository.UpdateAsync(payment);
             }
@@ -209,6 +222,58 @@ namespace TouRest.Application.Services
             if (payment == null)
                 throw new KeyNotFoundException("No active payment found");
             return _mapper.Map<PaymentDTO>(payment);
+        }
+
+        public async Task<PaymentDTO?> GetLatestPaymentAsync(Guid bookingId)
+        {
+            var payment = await _paymentRepository.GetLatestPaymentByBookingIdAsync(bookingId);
+            return payment == null ? null : _mapper.Map<PaymentDTO>(payment);
+        }
+
+        public async Task FinalizePaymentByOrderCodeAsync(long orderCode)
+        {
+            var payment = await _paymentRepository.GetByOrderCodeAsync(orderCode);
+            if (payment == null || payment.Status == PaymentStatus.Paid) return;
+
+            // Verify with PayOS API
+            PayOS.Models.V2.PaymentRequests.PaymentLink paymentInfo;
+            try { paymentInfo = await _payOS.PaymentRequests.GetAsync(orderCode); }
+            catch { return; }
+
+            if (paymentInfo.Status != PayOS.Models.V2.PaymentRequests.PaymentLinkStatus.Paid) return;
+
+            payment.Status    = PaymentStatus.Paid;
+            payment.PaidAt    = DateTime.UtcNow;
+            payment.UpdatedAt = DateTime.UtcNow;
+            await _paymentRepository.UpdateAsync(payment);
+
+            var booking = await _bookingRepository.GetByIdAsync(payment.BookingId);
+            if (booking == null) return;
+
+            booking.Status        = BookingStatus.Confirmed;
+            booking.PaymentStatus = PaymentStatus.Paid;
+            booking.UpdatedAt     = DateTime.UtcNow;
+            await _bookingRepository.UpdateAsync(booking);
+
+            var lines = await _bookingItineraryRepository.GetBookingItinerariesByBookingId(payment.BookingId);
+            foreach (var line in lines)
+            {
+                line.Status    = BookingItineraryStatus.Confirmed;
+                line.UpdatedAt = DateTime.UtcNow;
+                await _bookingItineraryRepository.UpdateAsync(line);
+            }
+
+            await _notificationRepository.CreateAsync(new Notification
+            {
+                Id              = Guid.NewGuid(),
+                RecipientUserId = booking.UserId,
+                Title           = "Payment Confirmed",
+                Message         = $"Your payment for booking #{booking.Code} has been confirmed.",
+                EntityType      = NotificationEntityType.Booking,
+                EntityId        = payment.BookingId,
+                IsRead          = false,
+                CreatedAt       = DateTime.UtcNow,
+            });
         }
 
         private async Task CancelPayOSLinkAsync(Payment payment)

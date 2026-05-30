@@ -3,6 +3,7 @@ using TouRest.Application.Interfaces;
 using TouRest.Application.Services;
 using TouRest.Domain.Interfaces;
 using TouRest.Infrastructure.Repositories;
+using TouRest.Infrastructure.Persistence;
 
 namespace TouRest.Api.Extensions
 {
@@ -15,6 +16,7 @@ namespace TouRest.Api.Extensions
             services.AddScoped<IAgencyRepository, AgencyRepository>();
             services.AddScoped<IAgencyUserRepository, AgencyUserRepository>();
             services.AddScoped<IBookingItineraryRepository, BookingItineraryRepository>();
+            services.AddScoped<IBookingPassengerRepository, BookingPassengerRepository>();
             services.AddScoped<IBookingRepository, BookingRepository>();
             services.AddScoped<IFeedbackRepository, FeedbackRepository>();
             services.AddScoped<IItineraryActivityRepository, ItineraryActivityRepository>();
@@ -42,6 +44,8 @@ namespace TouRest.Api.Extensions
             services.AddScoped<IVehicleRepository, VehicleRepository>();
             services.AddScoped<IAgencyDashboardRepository, AgencyDashboardRepository>();
             services.AddScoped<IProviderDashboardRepository, ProviderDashboardRepository>();
+            services.AddScoped<IItineraryTrackingRepository, ItineraryTrackingRepository>();
+            services.AddScoped<IProviderStaffRepository, ProviderStaffRepository>();
             services.AddScoped<IAdminDashboardRepository, AdminDashboardRepository>();
 
 
@@ -76,6 +80,8 @@ namespace TouRest.Api.Extensions
             services.AddScoped<INotificationService, NotificationService>();
             services.AddScoped<IAgencyDashboardService, AgencyDashboardService>();
             services.AddScoped<IProviderDashboardService, ProviderDashboardService>();
+            services.AddScoped<IItineraryTrackingService, ItineraryTrackingService>();
+            services.AddScoped<IProviderStaffService, ProviderStaffService>();
             services.AddScoped<IAdminDashboardService, AdminDashboardService>();
             return services;
         }

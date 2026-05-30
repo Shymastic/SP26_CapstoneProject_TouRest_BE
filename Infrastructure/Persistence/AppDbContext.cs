@@ -27,6 +27,7 @@ namespace TouRest.Infrastructure.Persistence
         public DbSet<ItineraryTracking> ItineraryTrackings => Set<ItineraryTracking>();
         public DbSet<Booking> Bookings => Set<Booking>();
         public DbSet<BookingItinerary> BookingItineraries => Set<BookingItinerary>();
+        public DbSet<BookingPassenger> BookingPassengers => Set<BookingPassenger>();
         public DbSet<Voucher> Vouchers => Set<Voucher>();
         public DbSet<Refund> Refunds => Set<Refund>();
         public DbSet<Feedback> Feedbacks => Set<Feedback>();
@@ -40,6 +41,8 @@ namespace TouRest.Infrastructure.Persistence
         public DbSet<WalletTransaction> WalletTransactions => Set<WalletTransaction>();
         public DbSet<Payout> Payouts => Set<Payout>();
         public DbSet<Vehicle> Vehicles => Set<Vehicle>();
+        public DbSet<MedicalResult> MedicalResults => Set<MedicalResult>();
+        public DbSet<MedicalResultImage> MedicalResultImages => Set<MedicalResultImage>();
         public AppDbContext(DbContextOptions<AppDbContext> options)
             : base(options) { }
 
@@ -145,6 +148,16 @@ namespace TouRest.Infrastructure.Persistence
                 .WithMany()
                 .HasForeignKey(a => a.ServiceId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // Configure BookingPassenger relationships
+            modelBuilder.Entity<BookingPassenger>()
+                .HasOne(bp => bp.Booking)
+                .WithMany(b => b.Passengers)
+                .HasForeignKey(bp => bp.BookingId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<BookingPassenger>()
+                .HasIndex(bp => bp.BookingId);
 
             // Configure BookingItinerary relationships
             modelBuilder.Entity<BookingItinerary>()
@@ -336,6 +349,36 @@ namespace TouRest.Infrastructure.Persistence
                 .WithMany()
                 .HasForeignKey(s => s.VehicleId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // MedicalResult relationships
+            modelBuilder.Entity<MedicalResult>()
+                .HasOne(mr => mr.Passenger)
+                .WithMany()
+                .HasForeignKey(mr => mr.PassengerId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<MedicalResult>()
+                .HasOne(mr => mr.Schedule)
+                .WithMany()
+                .HasForeignKey(mr => mr.ScheduleId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<MedicalResult>()
+                .HasOne(mr => mr.Provider)
+                .WithMany()
+                .HasForeignKey(mr => mr.ProviderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<MedicalResult>()
+                .HasIndex(mr => new { mr.PassengerId, mr.ScheduleId })
+                .IsUnique();
+
+            modelBuilder.Entity<MedicalResultImage>()
+                .HasOne(i => i.MedicalResult)
+                .WithMany(mr => mr.Images)
+                .HasForeignKey(i => i.MedicalResultId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             modelBuilder.Entity<Feedback>()
                   .HasOne(f => f.RepliedBy)
                  .WithMany()

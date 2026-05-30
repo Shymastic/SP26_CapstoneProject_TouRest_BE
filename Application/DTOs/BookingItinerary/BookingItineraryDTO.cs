@@ -22,6 +22,11 @@ namespace TouRest.Application.DTOs.BookingItinerary
         public DateTime? ScheduleEndTime { get; set; }   
         public string? VoucherCode { get; set; }          
         public long DiscountAmount { get; set; }         
-        public bool HasFeedback { get; set; }            
+        public bool HasFeedback { get; set; }
+
+        // Journey detail fields
+        public Guid? ItineraryId { get; set; }
+        public string? GuideName { get; set; }
+        public string? GuidePhone { get; set; }
     }
 }

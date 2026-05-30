@@ -26,5 +26,11 @@ namespace TouRest.Application.Services
 
         public async Task<List<PendingRequestDto>> GetPendingRequestsAsync(Guid providerId)
             => await _dashboardRepository.GetPendingRequestsAsync(providerId);
+
+        public async Task<List<ActivePackageDto>> GetActivePackagesAsync(Guid providerId)
+            => await _dashboardRepository.GetActivePackagesAsync(providerId);
+
+        public async Task<List<ProviderTopAgencyDto>> GetTopAgenciesAsync(Guid providerId)
+            => await _dashboardRepository.GetTopAgenciesAsync(providerId);
     }
 }

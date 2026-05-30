@@ -46,6 +46,14 @@ namespace TouRest.Infrastructure.Repositories
                 .Where(au => au.AgencyId == agencyId)
                 .ToListAsync();
         }
+        public async Task<List<AgencyUser>> GetTourGuidesByAgencyIdAsync(Guid agencyId)
+        {
+            return await _context.AgencyUsers
+                .Include(au => au.User)
+                .Where(au => au.AgencyId == agencyId && au.Role == AgencyUserRole.TourGuide)
+                .ToListAsync();
+        }
+
         public async Task<List<AgencyUser>> SearchUsersByAgency(Guid id, SearchUserByAgency search)
         {
             return await _context.AgencyUsers.Include(au => au.User)

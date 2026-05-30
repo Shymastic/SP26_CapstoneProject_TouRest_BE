@@ -4,8 +4,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TouRest.Application.Common.Constants;
 using TouRest.Application.DTOs.Agency;
 using TouRest.Application.Interfaces;
+using TouRest.Domain.Entities;
 using TouRest.Domain.DTOs;
 using TouRest.Domain.Enums;
 using TouRest.Domain.Interfaces;
@@ -17,12 +19,23 @@ namespace TouRest.Application.Services
         private readonly IAgencyUserRepository _agencyUserRepository;
         private readonly IAgencyRepository _agencyRepository;
         private readonly IUserRepository _userRepository;
+        private readonly IRoleRepository _roleRepository;
+        private readonly IPasswordHasher _passwordHasher;
         private readonly IMapper _mapper;
-        public AgencyUserService(IAgencyUserRepository agencyUserRepository, IAgencyRepository agencyRepository, IUserRepository userRepository, IMapper mapper)
+
+        public AgencyUserService(
+            IAgencyUserRepository agencyUserRepository,
+            IAgencyRepository agencyRepository,
+            IUserRepository userRepository,
+            IRoleRepository roleRepository,
+            IPasswordHasher passwordHasher,
+            IMapper mapper)
         {
-             _agencyUserRepository = agencyUserRepository;
+            _agencyUserRepository = agencyUserRepository;
             _agencyRepository = agencyRepository;
             _userRepository = userRepository;
+            _roleRepository = roleRepository;
+            _passwordHasher = passwordHasher;
             _mapper = mapper;
         }
         private async Task ValidateAgencyAndUser(Guid agencyId, Guid userId)
@@ -77,6 +90,46 @@ namespace TouRest.Application.Services
             if (agencyId == Guid.Empty)
                 throw new ArgumentException("AgencyId cannot be empty", nameof(agencyId));
             return await _agencyUserRepository.GetGuidesByAgencyIdAsync(agencyId);
+        }
+
+        public async Task<List<AgencyUserDTO>> GetTourGuidesAsync(Guid agencyId)
+        {
+            if (agencyId == Guid.Empty)
+                throw new ArgumentException("AgencyId cannot be empty", nameof(agencyId));
+            return _mapper.Map<List<AgencyUserDTO>>(await _agencyUserRepository.GetTourGuidesByAgencyIdAsync(agencyId));
+        }
+
+        public async Task<AgencyUserDTO> CreateGuideAccountAsync(Guid agencyId, CreateGuideRequest request)
+        {
+            if (await _userRepository.GetByEmailAsync(request.Email) != null)
+                throw new InvalidOperationException("A user with this email already exists");
+
+            var agencyRole = await _roleRepository.GetByCodeAsync(RoleCodes.Agency);
+            if (agencyRole == null)
+                throw new InvalidOperationException("AGENCY role not found");
+
+            var user = new User
+            {
+                Id = Guid.NewGuid(),
+                Username = request.Email,
+                Email = request.Email,
+                FullName = request.FullName,
+                Phone = request.Phone,
+                PasswordHash = _passwordHasher.HashPassword(request.Password),
+                RoleId = agencyRole.Id,
+                Status = UserStatus.Active,
+            };
+            await _userRepository.CreateAsync(user);
+            await _agencyUserRepository.AddUserToAgencyAsync(agencyId, user.Id, AgencyUserRole.TourGuide);
+
+            return new AgencyUserDTO
+            {
+                AgencyId = agencyId,
+                UserId = user.Id,
+                UserFullName = user.FullName ?? user.Username,
+                Email = user.Email,
+                Role = AgencyUserRole.TourGuide.ToString(),
+            };
         }
     }
 }

@@ -11,6 +11,7 @@ namespace TouRest.Application.Services
     {
         private readonly IBookingRepository _bookingRepo;
         private readonly IBookingItineraryRepository _bookingItineraryRepo;
+        private readonly IBookingPassengerRepository _passengerRepo;
         private readonly IItineraryScheduleRepository _scheduleRepo;
         private readonly IItineraryRepository _itineraryRepo;
         private readonly IVoucherRepository _voucherRepo;
@@ -20,6 +21,7 @@ namespace TouRest.Application.Services
         public BookingService(
             IBookingRepository bookingRepo,
             IBookingItineraryRepository bookingItineraryRepo,
+            IBookingPassengerRepository passengerRepo,
             IItineraryScheduleRepository scheduleRepo,
             IItineraryRepository itineraryRepo,
             IVoucherRepository voucherRepo,
@@ -28,6 +30,7 @@ namespace TouRest.Application.Services
         {
             _bookingRepo          = bookingRepo;
             _bookingItineraryRepo = bookingItineraryRepo;
+            _passengerRepo        = passengerRepo;
             _scheduleRepo         = scheduleRepo;
             _itineraryRepo        = itineraryRepo;
             _voucherRepo          = voucherRepo;
@@ -101,7 +104,15 @@ namespace TouRest.Application.Services
             };
             await _bookingItineraryRepo.CreateAsync(line);
 
-            // 7. Decrease schedule spots
+            // 7. Save passengers
+            foreach (var p in request.Passengers)
+            {
+                var passenger = _mapper.Map<BookingPassenger>(p);
+                passenger.BookingId = booking.Id;
+                await _passengerRepo.CreateAsync(passenger);
+            }
+
+            // 8. Decrease schedule spots
             schedule.SpotLeft -= request.NumberOfGuests;
             await _scheduleRepo.UpdateAsync(schedule);
 
@@ -159,9 +170,12 @@ namespace TouRest.Application.Services
             await _bookingRepo.UpdateAsync(existing);
         }
 
-        public async Task<List<BookingDTO>> GetBookingsByUserIdAsync(Guid userId)
+        public async Task<List<BookingDTO>> GetBookingsByUserIdAsync(Guid userId, string? status = null)
         {
-            var bookings = await _bookingRepo.GetBookingsByUserIdAsync(userId);
+            BookingStatus? parsedStatus = null;
+            if (!string.IsNullOrWhiteSpace(status) && Enum.TryParse<BookingStatus>(status, true, out var parsed))
+                parsedStatus = parsed;
+            var bookings = await _bookingRepo.GetBookingsByUserIdAsync(userId, parsedStatus);
             return _mapper.Map<List<BookingDTO>>(bookings);
         }
 

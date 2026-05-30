@@ -16,12 +16,13 @@ namespace TouRest.Application.Mappings
          public BookingProfile()
         {
             CreateMap<Booking, BookingSummaryDTO>();
-            CreateMap<Booking, BookingDTO>();
+            CreateMap<Booking, BookingDTO>()
+                .ForMember(dest => dest.Passengers,
+                    opt => opt.MapFrom(src => src.Passengers));
             CreateMap<BookingUpdateRequest, Booking>()
                 .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.Id, opt => opt.Ignore());
-
         }
     }
 }
